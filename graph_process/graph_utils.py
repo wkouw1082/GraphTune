@@ -3,7 +3,8 @@
 
 主な機能は以下.
 ・グラフオブジェクトから隣接行列への変換
-・
+・テキストファイルからグラフオブジェクトを作成
+・グラフオブジェクトのグラフ特徴量を計算し, csvへ出力
 """
 
 import networkx as nx
@@ -63,6 +64,35 @@ def text2graph(text_files):
             G = nx.read_edgelist(f, nodetype=int)
         graph_data.append(G)
     return graph_data
+
+
+
+def dfs_code_to_graph_obj(dfs_code,end_value_list, edge_num=None):
+    """DFScodeをnetworkxのグラフオブジェクトに変換する関数
+
+    Args:
+        dfs_code ([np.array]): [(sequence,5)のnp.array]
+        end_value_list ([list]): [終了コード[5]]
+
+    Returns:
+        [networkx_graph]: [networkxのグラフオブジェクトを返す]
+    """    
+    G = nx.Graph()
+    for current_code in dfs_code:
+        for i in range(len(current_code)):
+            if edge_num:
+                if len(G.edges) >= edge_num:
+                    return G
+                elif current_code[i] == end_value_list[i]-1:
+                    return G
+            else:
+                # 長さ自体はend_value_listの値だが実際の値は0から始まっているため-1する
+                if current_code[i] == end_value_list[i]-1:
+                    return G
+
+        tu,tv,_,_,_ = current_code
+        G.add_edge(tu,tv)
+    return G
 
 
 if __name__ == "__main__":

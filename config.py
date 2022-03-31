@@ -29,9 +29,19 @@ class Parameters:
     
     # Condition
     conditional_mode: bool = True   # 条件付き学習, 条件付き生成を行う場合はTrue
-    condition_params: list = field(default_factory=lambda: ["Average path length"])  # conditionとして与えるparameter
+    condition_params: list = field(default_factory=lambda: ["Average path length"])  # preprocessでconditionとして与えるparameter
     condition_round: int = 4    # conditionの値の丸める桁数
     condition_size: int = 1     # condition size
+    condition_values: dict = field(default_factory=lambda: {
+        "Power-law exponent": [2.6, 3.0, 3.4], 
+        "Clustering coefficient":[0.1,0.2,0.3], 
+        "Average path length":[3.0,4.0,5.0], 
+        "Average degree":[3,4,5], 
+        "Edge density":[0.05,0.075,0.10], 
+        "Modularity":[0.5, 0.6, 0.7], 
+        "Diameter":[10,20,30], 
+        "Largest component size":[7.0, 14.0, 20.0],
+    })
 
     # Preprocess
     test_size: float = 0.1  # データセットをtrain用とvalid用に分割する際のvalid用データの比率
@@ -44,8 +54,9 @@ class Parameters:
     dfs_mode: str = "normal"  # ["high_degree_first", "normal", "low_degree_first"]から選択できる.
     ignore_label: int = 1500  # 5-tuples内のデータにおいて、無視するデータ
     
-    # Calculate graph properties
+    # Graph properties
     power_degree_border_line: float = 0.7 # 次数分布の冪指数を出すときに大多数のデータに引っ張られるせいで１次元プロットが正しい値から離れてしまうのでいくつかの値を除いて導出するための除く割合
+    
     
     # Models
     dropout: float = 0.5        # dropout層に入力されたデータをdropさせる割合
@@ -57,12 +68,21 @@ class Parameters:
     
     # Train
     epochs: int = 100000   # エポック数
-    model_save_point: int = 100  # modelをsaveするチェックポイント(エポック数)
+    model_save_point: int = 500  # modelをsaveするチェックポイント(エポック数)
     
     # Eval
     # 現状、"power_degree", "cluster_coefficient", "distance", "size"
     eval_params: list = field(default_factory=lambda: ["Power-law exponent", "Clustering coefficient", "Average path length", "Average degree" ,"Edge density", "Modularity", "Diameter","Largest component size"])
     sampling_generation: bool = True    # 生成時に出力される分布からサンプリングするか最大値から取るか
+    generate_edge_num: int = 100        # 生成するgraphのエッジの数
+    size_th: int = 0                    # 評価に用いるネットワークのサイズの閾値
+
+    # Visualize
+    visualize_detail: dict = field(default_factory=lambda: {
+      "twitter_pickup": [300, None, [None]]  # 統計的手法の場合, [生成するグラフ数, データ次元数, [指定パラメータ1, 指定パラメータ2]]
+    })
+    visualize_types: dict = field(default_factory=lambda: {"Real_data":'bbb',\
+        "AveragePathLength_3.0":'aaa',"AveragePathLength_0.4":'yyy',"Average_PathLength_0.5":'xxx'})
 
 
 def common_args(parser: 'ArgumentParser'):

@@ -14,6 +14,7 @@ import torch
 import os
 import sys
 from tqdm import tqdm
+import random
 
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from graph_process import graph_statistic
@@ -107,7 +108,54 @@ class ComplexNetworks:
         joblib.dump([train_data, train_labels], self.twitter_train_path)
         joblib.dump([valid_data, valid_labels], self.twitter_valid_path)
     
+    def create_dataset(self, detail, do_type='train'):
+        """統計的手法や既存のデータセットから, グラフオブジェクトを作成する関数.
 
+        Args:
+            detail (dict): グラフオブジェクトの作成に関する詳細
+            do_type (str, optional): 実行タイプ. 可視化するときは, "visualize"とする.
+
+        Returns:
+            (dict): keyは統計的手法や既存のデータセットの名称, valueはグラフオブジェクトのリスト.
+        """
+        datasets = {}
+        for i, (key, value) in enumerate(detail.items()):
+            generate_num = value[0]
+            data_dim = value[1]
+            params = value[2]
+            
+            params_list = []
+            for param in params:
+                if key == "twitter_pickup":
+                    data = self.pickup_twitter_data(generate_num)
+                else:
+                    print("引数で指定されたdetailに無効なkeyが含まれているため, skipします.")
+                
+                # NNモデルでの生成時にはこっちを使う　いろんなparamのデータをまとめて一つのデータセットにするため
+                if do_type == 'train':
+                    params_list.extend(data)
+                elif do_type == 'visualize':
+                    # visualizeのみはこっちを使う　paramを分けてデータを分析したいため
+                    params_list.append(data)
+                else:
+                    print("無効な do_type です.")
+                    exit(1)
+            datasets[key] = params_list
+        return datasets
+    
+    def pickup_twitter_data(self, sampling_num):
+        """Twitterデータセットからランダムに指定する数だけサンプリングする関数
+        
+        Args:
+            sampling_num (int): Twitterデータセットからサンプリングする数
+
+        Returns:
+            (list): Twitterデータセットからサンプリングしたグラフのリスト
+        """
+        text_files = glob.glob(self.twitter_path)
+        data = text2graph(text_files)
+        sample_data = random.sample(data, sampling_num)
+        return sample_data
 
 
 

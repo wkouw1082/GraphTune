@@ -1,6 +1,7 @@
 """便利な関数群"""
 from __future__ import annotations  # Python 3.7, 3.8はこの記述が必要
 import torch
+from torch.distributions import Categorical
 import subprocess
 import logging
 import json
@@ -10,6 +11,7 @@ from dataclasses import asdict
 from typing import Any
 import glob
 import numpy as np
+import pandas as pd
 
 
 def get_git_revision() -> str:
@@ -244,3 +246,47 @@ def sample_dist(dist_tensor: 'torch.Tensor') -> 'torch.Tensor':
     categorical_obj = Categorical(dist_tensor)
     sample = categorical_obj.sample()
     return sample
+
+def get_condition_values(condition_params, condition_values, label_nums=3):
+    """
+
+    Args:
+        condition_params (): _description_
+        condition_values (): _description_
+        label_nums (int, optional): _description_. Defaults to 3.
+
+    Returns:
+        (): _description_
+    """
+    labels = [[] for i in range(label_nums)]
+    keys = condition_params
+    for key in keys:
+        values = condition_values[key]
+        for i in range(label_nums):
+            labels[i].append(values[i])
+
+    labels = [np.prod(i) for i in labels]
+    return labels
+
+def concat_csv(csv_paths):
+    """複数のcsvファイルを結合する関数
+
+    Parameters
+    ----------
+    csv_paths : list
+        結合したいcsvファイルのパスのリスト
+
+    Returns
+    -------
+    pandas.df
+        csvファイルを結合してtypeを追加したpandasのデータフレーム
+    """
+    df_concat = pd.read_csv(csv_paths[0])
+    df_concat['type'] = os.path.splitext(os.path.basename(csv_paths[0]))[0]
+
+    for path in csv_paths[1:]:
+        df_add = pd.read_csv(path)
+        df_add['type'] = os.path.splitext(os.path.basename(path))[0]
+        df_concat = pd.concat([df_concat,df_add])
+
+    return df_concat

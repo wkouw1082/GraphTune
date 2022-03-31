@@ -8,7 +8,6 @@ from networkx.readwrite import json_graph
 import numpy as np
 import networkx as nx
 import torch
-# import dgl
 from collections import OrderedDict
 import networkx.algorithms.approximation.treewidth as nx_tree
 import networkx.algorithms.community as nx_comm
@@ -296,6 +295,43 @@ class GraphStatistic:
         '''
         closeness_centers = nx.closeness_centrality(graph)
         return closeness_centers
+    
+    def get_average_params(self, csv_path, save_dir):
+        """生成したグラフの各パラメータごとの平均値を返すプログラム
+
+        Args:
+            csv_path (str): グラフごとのパラメータをもつcsvファイルのpath
+            save_dir (str): 保存先のpath
+        """
+        file_name = os.path.splitext(os.path.basename(csv_path))[0]
+
+        df = pd.read_csv(csv_path)
+        average_df = df.mean()
+
+        average_df.to_csv(save_dir + file_name + '.csv')
+    
+    @staticmethod
+    def get_percentile_params(csv_path, save_dir, prob_list=(0.25, 0.5, 0.75)):
+        """生成したグラフの各パラメータごとの中央値やパーセンタイルを返すプログラム
+
+        Parameters
+        ----------
+        csv_path : str
+            グラフごとのパラメータをもつcsvファイルのpath
+        save_dir : str
+            保存先のpath
+        prob_list : list
+            パーセンタイルを出力する確率の値
+        """
+
+        file_name = os.path.splitext(os.path.basename(csv_path))[0]
+
+        df = pd.read_csv(csv_path)
+        df_list = []
+        for p in prob_list:
+            df_list.append(df.quantile(p))
+        percentile_df = pd.concat(df_list, axis=1)
+        percentile_df.to_csv(f'{save_dir}{file_name}.csv')
 
     def calc_graph_traits2csv(self, graphs, eval_params):
         '''
@@ -378,6 +414,24 @@ class GraphStatistic:
                 tmp_dict.update({key:param})
             trait_list.append(tmp_dict)
         return trait_list
+
+    def graph2csv(self, graphs, csv_dir, file_name, eval_params):
+        '''各グラフデータのパラメータをcsvファイルに出力する関数
+
+        Args:
+            graphs      (list): グラフデータが格納されているリスト [GraphObj, ...]
+            csv_dir   (string): csvファイルをの保存先ディレクトリ
+                                e.g. csv_dir = "result/2021_0101/visualize/csv/"
+            file_name (string): csvファイル名
+                                e.g. file_name = "AveragePathLength_01"
+            eval_params (list): 計算したいグラフ特徴量の名称のリスト
+                                e.g. eval_params = ["Power-law exponent", "Clustering coefficient"]
+        '''
+        trait_dict = self.calc_graph_traits2csv(graphs, eval_params)
+        with open(csv_dir + file_name + '.csv', 'w') as f:
+            writer = csv.DictWriter(f, fieldnames=eval_params)
+            writer.writeheader()
+            writer.writerows(trait_dict)
 
 
 if __name__ == "__main__":
