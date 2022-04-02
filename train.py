@@ -243,7 +243,7 @@ def train_cvae_with_pre_trained_re_encoder(params, args, logger):
 	writer = SummaryWriter(log_dir=f"./result/{params.run_date}")
 
 	# device
-	device = get_gpu_info()
+	device = "cuda" if torch.cuda.is_available() else "cpu"
 
 	# 前処理
 	if args.preprocess:
@@ -352,7 +352,7 @@ def train_cvae_with_pre_trained_re_encoder(params, args, logger):
 			else:
 				model.eval()    			# modelを評価するモードに設定する
 				dataloader = valid_dl		# 検証用のDataLoaderを指定する
-				label = valid_conditional	# 検証用のラベルを指定する
+				label = valid_label			# 検証用のラベルを指定する
 				condition = valid_conditional # 検証用のconditionを指定する
 				logger.info("  valid:")
 
@@ -646,6 +646,6 @@ if __name__ == "__main__":
 	logger.info(args)
 
 	# train
-	train_cvae(params, args, logger)
-	# train_cvae_with_pre_trained_re_encoder(params, args, logger)
+	# train_cvae(params, args, logger)
+	train_cvae_with_pre_trained_re_encoder(params, args, logger)
 	# train_re_encoder(params, args, logger)
