@@ -43,6 +43,7 @@ class Encoder(nn.Module):
             () : 分布の平均値に該当する値
             () : 分布の標準偏差に該当する値
         """
+        # TODO 活性化関数を導入したほうが良い？
         x = self.emb(x)
         # x = torch.cat((x,label),dim=2)
         x, (h,c) = self.lstm(x)
@@ -54,7 +55,7 @@ class Encoder(nn.Module):
 
         Args:
             mu    () : 分布の平均値に該当する値
-            sigma () : 分布の標準偏差に該当する値
+            sigma () : 分布の分散に該当する値
         
         Returns:
             () : KL divergence

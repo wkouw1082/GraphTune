@@ -72,4 +72,8 @@ def transformation(mu, sigma, device):
 
 
 if __name__ == "__main__":
-    print("vae.py")
+    print("cvae.py")
+    import config
+    params = config.Parameters()
+    # model = CVAE(dfs_size=173, time_size=51, node_size=34, edge_size=2, condition_size=1, params=params, device="cuda")
+    

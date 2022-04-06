@@ -49,7 +49,7 @@ def train_cvae(params, args, logger):
 	writer = SummaryWriter(log_dir=f"./result/{params.run_date}")
 
 	# device
-	device = get_gpu_info()
+	device = "cuda" if torch.cuda.is_available() else "cpu"
 
 	# 前処理
 	if args.preprocess:
@@ -104,7 +104,7 @@ def train_cvae(params, args, logger):
 	logger.info(summary(model, input_size=(params.model_params["batch_size"], train_dataset.shape[1], train_dataset.shape[2]), col_names=["output_size", "num_params"]))
 	
 	# 最適化関数の定義
-	opt = optim.Adam(model.parameters(), lr=0.001)	#TODO 学習率がハードコーディング
+	opt = optim.Adam(model.parameters(), lr=params.model_params["lr"])
 	logger.info("最適化関数")
 	logger.info(opt)
 
@@ -320,7 +320,7 @@ def train_cvae_with_pre_trained_re_encoder(params, args, logger):
 		exit()
 
 	# 最適化関数の定義
-	opt = optim.Adam(model.parameters(), lr=0.001)	#TODO 学習率がハードコーディング
+	opt = optim.Adam(model.parameters(), lr=params.model_params["lr"])
 	logger.info("最適化関数")
 	logger.info(opt)
 
@@ -471,7 +471,7 @@ def train_re_encoder(params, args, logger):
 	writer = SummaryWriter(log_dir=f"./result/{params.run_date}")
 
 	# device
-	device = get_gpu_info()
+	device = "cuda" if torch.cuda.is_available() else "cpu"
 
 	# 前処理
 	if args.preprocess:
@@ -525,7 +525,7 @@ def train_re_encoder(params, args, logger):
 	logger.info(summary(model, input_size=(params.model_params["batch_size"], train_dataset.shape[1], dfs_size-1), col_names=["output_size", "num_params"]))
 
 	# 最適化関数の定義
-	opt = optim.Adam(model.parameters(), lr=0.001) #TODO 学習率がハードコーディング
+	opt = optim.Adam(model.parameters(), lr=params.model_params["lr"])
 	logger.info("最適化関数")
 	logger.info(opt)
 

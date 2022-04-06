@@ -63,8 +63,13 @@ class Parameters:
     word_drop_rate: float = 0   # word drop rate
     ## model hyper parameters
     model_params: dict = field(default_factory=lambda: {'batch_size': 37, 'clip_th': 0.002362780918168105, 'de_hidden_size': 250, 'emb_size': 227, "re_en_hidden_size": 223, 'en_hidden_size': 223,
-                                                       'lr': 0.0015181790179257975, 'rep_size': 10, "re_en_rep_size": 1, 'weight_decay': 0.005663866734065268,
+                                                       'lr': 0.001, 'rep_size': 10, "re_en_rep_size": 1, 'weight_decay': 0,
                                                        "alpha": 1, "beta": 3, "gamma": 3})
+    """model parameters
+    以前、tuningして得たbest params
+    lr : 0.0015181790179257975
+    weight_decay : 0.005663866734065268
+    """
     
     # Train
     epochs: int = 100000   # エポック数
