@@ -4,3 +4,6 @@ venv/
 result/*
 .vscode/*
 dataset/*
+data/twitter_eval
+data/twitter_train
+nohup.out
