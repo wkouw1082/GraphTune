@@ -29,7 +29,7 @@ pip install -r requirements.txt
 ## Training
 - Modelの学習をバックグラウンドで実行(`train.py`を修正する必要あり).
 ```shell
-nohup python -u train.py &
+nohup python -u train.py --preprocess &
 ```
 - Modelのチェックポイントから学習を再開する例(前処理されたdatasetは統一することに注意).
 ```shell
@@ -37,7 +37,7 @@ nohup python -u train.py --checkpoint_file result/{結果出力ファイル名}/
 ```
 - 事前学習済みReEncoderを用いたCVAEの学習の例.
 ```shell
-nohup python -u train.py --re_encoder_file result/{結果出力ファイル名}/train/valid_best_weight &
+nohup python -u train.py --preprocess --re_encoder_file result/{結果出力ファイル名}/train/valid_best_weight &
 ```
 
 ## Evaluation
