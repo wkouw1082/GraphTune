@@ -44,13 +44,15 @@ class Parameters:
     })
 
     # Preprocess
-    test_size: float = 0.1  # データセットをtrain用とvalid用に分割する際のvalid用データの比率
+    split_size: dict = field(default_factory=lambda: {"train": 0.8, "valid": 0.1, "test": 0.1}) # データセットをtrain用とvalid用に分割する際のvalid用データの比率
     reddit_path: str = "./data/reddit_threads/reddit_edges.json"
     twitter_path: str = "./data/edgelists_50/renum*"
     twitter_train_path: str = './data/twitter_train'
-    twitter_valid_path: str = './data/twitter_eval'
+    twitter_valid_path: str = './data/twitter_valid'
+    twitter_test_path: str  = './data/twitter_test'
     train_network_detail: dict = field(default_factory=lambda: {"twitter_train":[None,None,[None]]})  # preprocessでのtrain datasetの詳細. valueは[生成数, データ次元, [データセットの名前]].
     valid_network_detail: dict = field(default_factory=lambda: {"twitter_valid":[None,None,[None]]})  # preprocessでのvalid datasetの詳細. valueは[生成数, データ次元, [データセットの名前]].
+    test_network_detail: dict  = field(default_factory=lambda: {"twitter_test" :[None,None,[None]]})  # preprocessでのtest datasetの詳細.  valueは[生成数, データ次元, [データセットの名前]].
     dfs_mode: str = "normal"  # ["high_degree_first", "normal", "low_degree_first"]から選択できる.
     ignore_label: int = 1500  # 5-tuples内のデータにおいて、無視するデータ
     
@@ -62,17 +64,18 @@ class Parameters:
     dropout: float = 0.5        # dropout層に入力されたデータをdropさせる割合
     word_drop_rate: float = 0   # word drop rate
     ## model hyper parameters
-    model_params: dict = field(default_factory=lambda: {'batch_size': 37, 'clip_th': 0.002362780918168105, 'de_hidden_size': 250, 'emb_size': 227, "re_en_hidden_size": 223, 'en_hidden_size': 223,
+    model_params: dict = field(default_factory=lambda: {'batch_size': 37, 'clip_th': 10, 'de_hidden_size': 250, 'emb_size': 227, "re_en_hidden_size": 223, 'en_hidden_size': 223,
                                                        'lr': 0.001, 'rep_size': 10, "re_en_rep_size": 1, 'weight_decay': 0,
                                                        "alpha": 1, "beta": 3, "gamma": 3})
     """model parameters
     以前、tuningして得たbest params
-    lr : 0.0015181790179257975
-    weight_decay : 0.005663866734065268
+    'lr' : 0.0015181790179257975
+    'weight_decay' : 0.005663866734065268
+    'clip_th' : 0.002362780918168105
     """
     
     # Train
-    epochs: int = 100000   # エポック数
+    epochs: int = 30000   # エポック数
     model_save_point: int = 500  # modelをsaveするチェックポイント(エポック数)
     
     # Eval

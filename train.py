@@ -469,6 +469,20 @@ def train_re_encoder(params, args, logger):
 	"""
 	# Tensorboardの設定
 	writer = SummaryWriter(log_dir=f"./result/{params.run_date}")
+ 
+	# Open epoch毎lossが記載されるcsv file
+	csv_train_loss = open(f"./result/{params.run_date}/train/csv/train_loss_data.csv", "w")
+	csv_valid_loss = open(f"./result/{params.run_date}/train/csv/valid_loss_data.csv", "w")
+	## Write header
+	csv_train_loss.write(f"epoch,loss\n")
+	csv_valid_loss.write(f"epoch,loss\n")
+ 
+	# Open modelが推論した値と正解ラベルが記載されたcsv file
+	csv_train_pred_val = open(f"./result/{params.run_date}/train/csv/train_pred_data.csv", "w")
+	csv_valid_pred_val = open(f"./result/{params.run_date}/train/csv/valid_pred_data.csv", "w")
+	## Write header
+	csv_train_pred_val.write(f"epoch,index,pred,correct\n")
+	csv_valid_pred_val.write(f"epoch,index,pred,correct\n")
 
 	# device
 	device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -477,7 +491,7 @@ def train_re_encoder(params, args, logger):
 	if args.preprocess:
 		logger.info("start preprocess...")
 		shutil.rmtree("dataset")
-		preprocess_dirs = ["dataset", "dataset/train", "dataset/valid"]
+		preprocess_dirs = ["dataset", "dataset/train", "dataset/valid", "dataset/test"]
 		make_dir(preprocess_dirs)
 		pp.preprocess(params)
 
@@ -555,7 +569,7 @@ def train_re_encoder(params, args, logger):
 				logger.info("  valid:")
 
 			# データをイレテー卜する
-			for i, (indicies, data) in enumerate(dataloader, 1):
+			for i, (indicies, data) in enumerate(dataloader, 0):
 				opt.zero_grad()   # パラメータの勾配をゼロにします
 				data = data.to(device)
 
@@ -571,13 +585,19 @@ def train_re_encoder(params, args, logger):
 					target_re_encoder = target_re_encoder.transpose(1, 0)[0]
 					model_loss = model.loss(graph_property, target_re_encoder)
 					model_loss_per_epoch[phase] += model_loss.item()
+	 
+					# Save pred, correct
+					for out_index in range(0, graph_property.shape[0], 1):
+						if phase == "train":
+							csv_train_pred_val.write(f"{epoch},{out_index + params.model_params['batch_size'] * i},{graph_property[out_index].item()},{target_re_encoder[out_index].item()}\n")
+						else:
+		  					csv_valid_pred_val.write(f"{epoch},{out_index + params.model_params['batch_size'] * i},{graph_property[out_index].item()},{target_re_encoder[out_index].item()}\n")
 
 					# 訓練の時だけ, 誤差逆伝搬 + 勾配クリッピング + オプティマイズ(重みの更新)する
 					if phase == "train":
 						model_loss.backward()
 	  					# 勾配クリッピング(勾配爆発の抑止)
-						#TODO 勾配クリッピングの値が適切か調査
-						# torch.nn.utils.clip_grad_norm_(model.parameters(), params.model_params["clip_th"])
+						torch.nn.utils.clip_grad_norm_(model.parameters(), params.model_params["clip_th"])
 						opt.step()
 						# model_lossから計算グラフを可視化
 						# dot = make_dot(model_loss, params=dict(model.named_parameters()))
@@ -585,11 +605,19 @@ def train_re_encoder(params, args, logger):
 
 			# Save loss/acc
 			if phase == "train":
+				# for tensorboard
 				writer.add_scalar(f"{phase}_loss/model_loss", model_loss_per_epoch[phase] / train_data_num, epoch)
+				# for logger
 				logger.info(f"    model_loss_per_epoch / train_data_num = {model_loss_per_epoch[phase] / train_data_num}")
+				# for csv
+				csv_train_loss.write(f"{epoch},{model_loss_per_epoch[phase] / train_data_num}\n")
 			else:
+				# for tensorboard
 				writer.add_scalar(f"{phase}_loss/model_loss", model_loss_per_epoch[phase] / valid_data_num, epoch)
+				# for logger
 				logger.info(f"    model_loss_per_epoch / valid_data_num = {model_loss_per_epoch[phase] / valid_data_num}")
+				# for csv
+				csv_valid_loss.write(f"{epoch},{model_loss_per_epoch[phase] / valid_data_num}\n")
 
 		# Save model at checkpoint
 		if epoch % params.model_save_point == 0:
@@ -610,6 +638,10 @@ def train_re_encoder(params, args, logger):
 			torch.save(model.state_dict(), "result/" + params.run_date + "/train/valid_best_weight")
 			logger.info(f'  Update valid best epoch: {epoch}')
 
+	csv_train_loss.close()
+	csv_valid_loss.close()
+	csv_train_pred_val.close()
+	csv_valid_pred_val.close()
 	writer.close()
 	logger.info(f"train best epoch : {train_best_epoch}")
 	logger.info(f"valid best epoch : {valid_best_epoch}")
@@ -631,7 +663,7 @@ if __name__ == "__main__":
 
 	# 結果出力用ディレクトリの作成
 	result_dir = f'result/{params.run_date}'
-	required_dirs = [result_dir, result_dir+"/train", result_dir+"/eval", result_dir+"/visualize", result_dir+"/visualize/csv"]
+	required_dirs = [result_dir, result_dir+"/train", result_dir+"/train/csv", result_dir+"/eval", result_dir+"/test", result_dir+"/visualize", result_dir+"/visualize/csv"]
 	make_dir(required_dirs)
 	dump_params(params, f'{result_dir}')  # パラメータを出力
 
@@ -647,5 +679,5 @@ if __name__ == "__main__":
 
 	# train
 	# train_cvae(params, args, logger)
-	train_cvae_with_pre_trained_re_encoder(params, args, logger)
-	# train_re_encoder(params, args, logger)
+	# train_cvae_with_pre_trained_re_encoder(params, args, logger)
+	train_re_encoder(params, args, logger)

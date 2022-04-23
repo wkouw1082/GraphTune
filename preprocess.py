@@ -10,7 +10,7 @@ from graph_process import complex_networks, convert_to_dfs_code
 import utils
 
 
-def preprocess(params, train_directory='./dataset/train/', valid_directory='./dataset/valid/'):
+def preprocess(params, train_directory='./dataset/train/', valid_directory='./dataset/valid/', test_directory='./dataset/test/'):
     """
     生データセットからグラフオブジェクトを作成し、それとそのサイズを保存する関数.
 
@@ -20,18 +20,20 @@ def preprocess(params, train_directory='./dataset/train/', valid_directory='./da
                 default: './dataset/train/'
             valid_directory      (str)  : 前処理後のvalidation用データセットが保存されるディレクトリ
                 default: './dataset/valid/'
-
+            test_directory       (str)  : 前処理後のtest用データセットが保存されるディレクトリ
+                default: './dataset/test/'
     """
     
     complex_network = complex_networks.ComplexNetworks()
     complex_network.make_twitter_graph_with_label()
     
-    train_dfs,train_time_set,train_node_set,train_max_length,train_label = to_dfs_conditional(params.train_network_detail, params.dfs_mode)
-    valid_dfs,valid_time_set,valid_node_set,valid_max_length,valid_label = to_dfs_conditional(params.valid_network_detail, params.dfs_mode)
+    train_dfs, train_time_set, train_node_set, train_max_length, train_label = to_dfs_conditional(params.train_network_detail, params.dfs_mode)
+    valid_dfs, valid_time_set, valid_node_set, valid_max_length, valid_label = to_dfs_conditional(params.valid_network_detail, params.dfs_mode)
+    test_dfs,  test_time_set,  test_node_set,  test_max_length,  test_label  = to_dfs_conditional(params.test_network_detail,  params.dfs_mode)
 
-    time_stamp_set = train_time_set | valid_time_set
-    node_label_set = train_node_set | valid_node_set
-    max_sequence_length = max(train_max_length, valid_max_length)
+    time_stamp_set = train_time_set | valid_time_set | test_time_set
+    node_label_set = train_node_set | valid_node_set | test_node_set
+    max_sequence_length = max(train_max_length, valid_max_length, test_max_length)
     conditional_label_length = params.condition_size #指定しているパラメータの数
     
     print(f"max_sequence_length = {max_sequence_length}")
@@ -43,8 +45,9 @@ def preprocess(params, train_directory='./dataset/train/', valid_directory='./da
 
     del time_stamp_set, node_label_set
     
-    get_onehot_and_list(train_dfs,time_dict,node_dict,max_sequence_length,train_label,train_directory, params.ignore_label)
-    get_onehot_and_list(valid_dfs,time_dict,node_dict,max_sequence_length,valid_label,valid_directory, params.ignore_label)
+    get_onehot_and_list(train_dfs, time_dict,node_dict, max_sequence_length, train_label, train_directory, params.ignore_label)
+    get_onehot_and_list(valid_dfs, time_dict,node_dict, max_sequence_length, valid_label, valid_directory, params.ignore_label)
+    get_onehot_and_list(test_dfs,  time_dict,node_dict, max_sequence_length, test_label,  test_directory,  params.ignore_label)
 
 def to_dfs_conditional(detail, dfs_mode):
     """

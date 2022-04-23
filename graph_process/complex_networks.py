@@ -29,11 +29,12 @@ class ComplexNetworks:
 
     def __init__(self):
         params = Parameters()
-        self.test_size = params.test_size
+        self.split_size = params.split_size
         self.condition_params = params.condition_params
         self.condition_round = params.condition_round
         self.twitter_train_path = params.twitter_train_path
         self.twitter_valid_path = params.twitter_valid_path
+        self.twitter_test_path = params.twitter_test_path
         self.twitter_path = params.twitter_path
 
     def create_seq_conditional_dataset(self, detail):
@@ -58,6 +59,9 @@ class ComplexNetworks:
                 elif key=='twitter_valid':
                     datasets = joblib.load(self.twitter_valid_path)
                     dataset, label = datasets[0], datasets[1]
+                elif key=='twitter_test':
+                    datasets = joblib.load(self.twitter_test_path)
+                    dataset, label = datasets[0], datasets[1]
         return dataset, label
 
     def make_twitter_graph_with_label(self):
@@ -67,14 +71,18 @@ class ComplexNetworks:
         """
         text_files = glob.glob(self.twitter_path)
         graph_data = text2graph(text_files)
-        train_data, valid_data = train_test_split(graph_data, test_size=self.test_size, random_state=0, shuffle=True)
+        
+        train_data, valid_test_data = train_test_split(graph_data, test_size=self.split_size["valid"]+self.split_size["test"], random_state=0, shuffle=True)
+        test_size = self.split_size["test"] / (self.split_size["valid"] + self.split_size["test"])
+        valid_data, test_data = train_test_split(valid_test_data, test_size=test_size, random_state=0, shuffle=True)
 
         train_labels = torch.Tensor()
         valid_labels = torch.Tensor()
+        test_labels  = torch.Tensor()
 
         st = graph_statistic.GraphStatistic()
         
-        # conditionalで指定するlabelを取得する
+        # conditionalで指定するlabelをtrain用に取得する
         print('generate train data ...')
         for graph in tqdm(train_data):
             # クラスタ係数と最長距離を指定するためにパラメータを取得してlabelとする
@@ -89,7 +97,8 @@ class ComplexNetworks:
                 tmp_label = torch.tensor(np.array([np.prod(tmp_label)])).float().unsqueeze(0)
             train_labels = torch.cat((train_labels, tmp_label),dim=0)
         train_labels.unsqueeze(1)
-
+        
+        # conditionalで指定するlabelをvalid用に取得する
         print('generate valid data ...')
         for graph in tqdm(valid_data):
             # クラスタ係数と最長距離を指定するためにパラメータを取得してlabelとする
@@ -104,9 +113,27 @@ class ComplexNetworks:
                 tmp_label = torch.tensor(np.array([np.prod(tmp_label)])).float().unsqueeze(0)
             valid_labels = torch.cat((valid_labels, tmp_label),dim=0)
         valid_labels.unsqueeze(1)
+        
+        # test labelデータの作成
+        print(f"generate test data ...")
+        for graph in tqdm(test_data):
+            # クラスタ係数と最長距離を指定するためにパラメータを取得してlabelとする
+            # paramsはリスト型で渡されるのでindex[0]をつける
+            params = st.calc_graph_traits2csv([graph],self.condition_params)[0]
+            tmp_label = []
+            for param in params.values():
+                tmp_label.append(round(param, self.condition_round))
+            if len(tmp_label) == 1:
+                tmp_label = torch.tensor(tmp_label).float().unsqueeze(0)
+            else:
+                tmp_label = torch.tensor(np.array([np.prod(tmp_label)])).float().unsqueeze(0)
+            test_labels = torch.cat((test_labels, tmp_label),dim=0)
+        test_labels.unsqueeze(1)
 
+        # joblibでtrain, valid, testデータにラベルをconcatしたデータを保存する
         joblib.dump([train_data, train_labels], self.twitter_train_path)
         joblib.dump([valid_data, valid_labels], self.twitter_valid_path)
+        joblib.dump([test_data,  test_labels],  self.twitter_test_path)
     
     def create_dataset(self, detail, do_type='train'):
         """統計的手法や既存のデータセットから, グラフオブジェクトを作成する関数.

@@ -45,7 +45,6 @@ class GraphStatistic:
 
     def __init__(self):
         params = Parameters()
-        self.test_size = params.test_size
         self.power_degree_border_line = params.power_degree_border_line
     
     # 以下、グラフ統計量を計算する関数群
