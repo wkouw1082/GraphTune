@@ -70,7 +70,7 @@ def dump_params(params: 'config.Parameters', outdir: str, partial: bool = False)
         json.dump(params_dict, f, indent=4)  # デフォルト設定をファイル出力
 
 
-def set_logging(result_dir: str) -> 'logging.Logger':
+def set_logging(result_dir: str, file_name: str = "log") -> 'logging.Logger':
     """
     ログを標準出力とファイルに書き出すよう設定する関数．
 
@@ -93,7 +93,7 @@ def set_logging(result_dir: str) -> 'logging.Logger':
     handler.setFormatter(formatter)  # フォーマットを指定
     logger.addHandler(handler)
     # ファイル出力へのログ出力設定
-    file_handler = logging.FileHandler(f'{result_dir}/log.log', 'w')  # ログ出力ファイル
+    file_handler = logging.FileHandler(f'{result_dir}/{file_name}.log', 'w')  # ログ出力ファイル
     file_handler.setLevel(logging.DEBUG)  # 出力ログレベル
     file_handler.setFormatter(formatter)  # フォーマットを指定
     logger.addHandler(file_handler)

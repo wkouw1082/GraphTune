@@ -64,7 +64,7 @@ class Parameters:
     dropout: float = 0.5        # dropout層に入力されたデータをdropさせる割合
     word_drop_rate: float = 0   # word drop rate
     ## model hyper parameters
-    model_params: dict = field(default_factory=lambda: {'batch_size': 37, 'clip_th': 10, 'de_hidden_size': 250, 'emb_size': 227, "re_en_hidden_size": 223, 'en_hidden_size': 223,
+    model_params: dict = field(default_factory=lambda: {'batch_size': 37, 'clip_th': 0.5, 'de_hidden_size': 250, 'emb_size': 227, "re_en_hidden_size": 223, 'en_hidden_size': 223,
                                                        'lr': 0.001, 'rep_size': 10, "re_en_rep_size": 1, 'weight_decay': 0,
                                                        "alpha": 1, "beta": 3, "gamma": 3})
     """model parameters

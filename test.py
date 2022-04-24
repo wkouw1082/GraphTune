@@ -28,7 +28,6 @@ import preprocess as pp
 from models import cvae, re_encoder
 
 
-# TODO デバッグしながら確認する。
 def test_re_encoder(params, args, logger):
 	"""ReEncoder modelをtestする関数
 
@@ -37,7 +36,21 @@ def test_re_encoder(params, args, logger):
 			args   (argparse.Namespace) : コンソールの引数のset
 			logger ()					: logging
 	"""
-	# device
+	if args.re_encoder_file:
+		home_dir = "result/" + args.re_encoder_file.split("/")[1] + "/"
+	else:
+		logger.info("re_encoder_file を引数で指定してください.")
+		exit()
+ 
+	# Open epoch毎lossが記載されるcsv file
+	with open(f"{home_dir}test/test_loss_data.csv", "w") as f:
+		f.write(f"epoch,loss\n")
+ 
+	# Open modelが推論した値と正解ラベルが記載されたcsv file
+	with open(f"{home_dir}test/test_pred_data.csv", "w") as f:
+		f.write(f"epoch,index,pred,correct\n")
+ 
+ 	# device
 	device = "cuda" if torch.cuda.is_available() else "cpu"
 
 	# 前処理後のdataをloadし, 加工する
@@ -75,12 +88,32 @@ def test_re_encoder(params, args, logger):
 	# test開始
 	logger.info("Start test ...")
 	model.eval()
+	model_test_loss = 0
 	## データをイレテー卜する
-	for i, (indicies, data) in enumerate(test_dl, 1):
+	for i, (indicies, data) in enumerate(test_dl, 0):
 		data = data.to(device)
 
 		# Forward propagate
 		graph_property = model(data)
+  
+		# Calculate loss
+	 	## model_lossは, 各lossのミニバッチのsumに, 対応するalphaなどの定数を乗じて, 和をとったものである.
+		graph_property = torch.squeeze(graph_property, 1)
+		target_re_encoder = test_conditional[indicies].to(device)
+		target_re_encoder = target_re_encoder.transpose(1, 0)[0]
+		model_loss = model.loss(graph_property, target_re_encoder)
+		model_test_loss += model_loss.item()
+  
+		# Save pred, correct
+		for out_index in range(0, graph_property.shape[0], 1):
+			with open(f"{home_dir}test/test_pred_data.csv", "a") as f:
+				f.write(f"1,{out_index + params.model_params['batch_size'] * i},{graph_property[out_index].item()},{target_re_encoder[out_index].item()}\n")
+
+	# for logger
+	logger.info(f"    model_loss / test_data_num = {model_test_loss / test_data_num}")
+	# for csv
+	with open(f"{home_dir}test/test_loss_data.csv", "a") as f:
+		f.write(f"1,{model_test_loss / test_data_num}\n")
 
 	logger.info("test complete!")
 
@@ -94,7 +127,7 @@ if __name__ == "__main__":
 
 	# ログ設定
 	logger = logging.getLogger(__name__)
-	set_logging(result_dir)  # ログを標準出力とファイルに出力するよう設定
+	set_logging("result/" + args.re_encoder_file.split("/")[1] + "/", file_name="test")  # ログを標準出力とファイルに出力するよう設定
 
 	# グローバル変数とargsをlog出力
 	logger.info('parameters: ')

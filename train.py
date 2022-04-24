@@ -471,18 +471,16 @@ def train_re_encoder(params, args, logger):
 	writer = SummaryWriter(log_dir=f"./result/{params.run_date}")
  
 	# Open epoch毎lossが記載されるcsv file
-	csv_train_loss = open(f"./result/{params.run_date}/train/csv/train_loss_data.csv", "w")
-	csv_valid_loss = open(f"./result/{params.run_date}/train/csv/valid_loss_data.csv", "w")
-	## Write header
-	csv_train_loss.write(f"epoch,loss\n")
-	csv_valid_loss.write(f"epoch,loss\n")
+	with open(f"./result/{params.run_date}/train/csv/train_loss_data.csv", "w") as csv_train_loss:
+		csv_train_loss.write(f"epoch,loss\n")
+	with open(f"./result/{params.run_date}/train/csv/valid_loss_data.csv", "w") as csv_valid_loss:
+		csv_valid_loss.write(f"epoch,loss\n")
  
 	# Open modelが推論した値と正解ラベルが記載されたcsv file
-	csv_train_pred_val = open(f"./result/{params.run_date}/train/csv/train_pred_data.csv", "w")
-	csv_valid_pred_val = open(f"./result/{params.run_date}/train/csv/valid_pred_data.csv", "w")
-	## Write header
-	csv_train_pred_val.write(f"epoch,index,pred,correct\n")
-	csv_valid_pred_val.write(f"epoch,index,pred,correct\n")
+	with open(f"./result/{params.run_date}/train/csv/train_pred_data.csv", "w") as csv_train_pred_val:
+		csv_train_pred_val.write(f"epoch,index,pred,correct\n")
+	with open(f"./result/{params.run_date}/train/csv/valid_pred_data.csv", "w") as csv_valid_pred_val:
+		csv_valid_pred_val.write(f"epoch,index,pred,correct\n")
 
 	# device
 	device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -589,9 +587,11 @@ def train_re_encoder(params, args, logger):
 					# Save pred, correct
 					for out_index in range(0, graph_property.shape[0], 1):
 						if phase == "train":
-							csv_train_pred_val.write(f"{epoch},{out_index + params.model_params['batch_size'] * i},{graph_property[out_index].item()},{target_re_encoder[out_index].item()}\n")
+							with open(f"./result/{params.run_date}/train/csv/train_pred_data.csv", "a") as csv_train_pred_val:
+								csv_train_pred_val.write(f"{epoch},{out_index + params.model_params['batch_size'] * i},{graph_property[out_index].item()},{target_re_encoder[out_index].item()}\n")
 						else:
-		  					csv_valid_pred_val.write(f"{epoch},{out_index + params.model_params['batch_size'] * i},{graph_property[out_index].item()},{target_re_encoder[out_index].item()}\n")
+							with open(f"./result/{params.run_date}/train/csv/valid_pred_data.csv", "a") as csv_valid_pred_val:
+		  						csv_valid_pred_val.write(f"{epoch},{out_index + params.model_params['batch_size'] * i},{graph_property[out_index].item()},{target_re_encoder[out_index].item()}\n")
 
 					# 訓練の時だけ, 誤差逆伝搬 + 勾配クリッピング + オプティマイズ(重みの更新)する
 					if phase == "train":
@@ -610,14 +610,16 @@ def train_re_encoder(params, args, logger):
 				# for logger
 				logger.info(f"    model_loss_per_epoch / train_data_num = {model_loss_per_epoch[phase] / train_data_num}")
 				# for csv
-				csv_train_loss.write(f"{epoch},{model_loss_per_epoch[phase] / train_data_num}\n")
+				with open(f"./result/{params.run_date}/train/csv/train_loss_data.csv", "a") as csv_train_loss:
+					csv_train_loss.write(f"{epoch},{model_loss_per_epoch[phase] / train_data_num}\n")
 			else:
 				# for tensorboard
 				writer.add_scalar(f"{phase}_loss/model_loss", model_loss_per_epoch[phase] / valid_data_num, epoch)
 				# for logger
 				logger.info(f"    model_loss_per_epoch / valid_data_num = {model_loss_per_epoch[phase] / valid_data_num}")
 				# for csv
-				csv_valid_loss.write(f"{epoch},{model_loss_per_epoch[phase] / valid_data_num}\n")
+				with open(f"./result/{params.run_date}/train/csv/valid_loss_data.csv", "a") as csv_valid_loss:
+					csv_valid_loss.write(f"{epoch},{model_loss_per_epoch[phase] / valid_data_num}\n")
 
 		# Save model at checkpoint
 		if epoch % params.model_save_point == 0:
@@ -638,10 +640,6 @@ def train_re_encoder(params, args, logger):
 			torch.save(model.state_dict(), "result/" + params.run_date + "/train/valid_best_weight")
 			logger.info(f'  Update valid best epoch: {epoch}')
 
-	csv_train_loss.close()
-	csv_valid_loss.close()
-	csv_train_pred_val.close()
-	csv_valid_pred_val.close()
 	writer.close()
 	logger.info(f"train best epoch : {train_best_epoch}")
 	logger.info(f"valid best epoch : {valid_best_epoch}")
@@ -669,7 +667,7 @@ if __name__ == "__main__":
 
 	# ログ設定
 	logger = logging.getLogger(__name__)
-	set_logging(result_dir)  # ログを標準出力とファイルに出力するよう設定
+	set_logging(result_dir, file_name="train")  # ログを標準出力とファイルに出力するよう設定
 
 	# グローバル変数とargsをlog出力
 	logger.info('parameters: ')
