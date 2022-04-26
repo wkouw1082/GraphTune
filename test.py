@@ -45,6 +45,10 @@ def test_re_encoder(params, args, logger):
 	# Open epoch毎lossが記載されるcsv file
 	with open(f"{home_dir}test/test_loss_data.csv", "w") as f:
 		f.write(f"epoch,loss\n")
+  
+	# Open modelの精度が記載されたcsv file
+	with open(f"{home_dir}test/test_acc.csv", "w") as f:
+		f.write(f"epoch,index,acc\n")
  
 	# Open modelが推論した値と正解ラベルが記載されたcsv file
 	with open(f"{home_dir}test/test_pred_data.csv", "w") as f:
@@ -103,10 +107,17 @@ def test_re_encoder(params, args, logger):
 		target_re_encoder = target_re_encoder.transpose(1, 0)[0]
 		model_loss = model.loss(graph_property, target_re_encoder)
 		model_test_loss += model_loss.item()
+
+		# Calculate accuracy
+		acc = model.accuracy(graph_property, target_re_encoder, params.condition_params[0])
+
+		# Save acc
+		with open(f"{home_dir}test/test_acc.csv", "a") as f:
+			f.write(f"1,{i},{acc}\n")
   
 		# Save pred, correct
-		for out_index in range(0, graph_property.shape[0], 1):
-			with open(f"{home_dir}test/test_pred_data.csv", "a") as f:
+		with open(f"{home_dir}test/test_pred_data.csv", "a") as f:
+			for out_index in range(0, graph_property.shape[0], 1):
 				f.write(f"1,{out_index + params.model_params['batch_size'] * i},{graph_property[out_index].item()},{target_re_encoder[out_index].item()}\n")
 
 	# for logger

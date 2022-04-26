@@ -91,6 +91,11 @@ class Parameters:
     })
     visualize_types: dict = field(default_factory=lambda: {"Real_data":'bbb',\
         "AveragePathLength_3.0":'aaa',"AveragePathLength_0.4":'yyy',"Average_PathLength_0.5":'xxx'})
+    
+    # Etc
+    ## グラフ特徴量の精度を計算する時、正解と分類される値の範囲([a, b] = {x-a <= x <= x+b | xはグラフ特徴量})
+    acc_range: dict = field(default_factory=lambda: {"Power-law exponent": [0.1, 0.1], "Clustering coefficient": [0.01, 0.01], "Average path length": [0.05, 0.05], "Average degree": [0.1, 0.1],
+                                                     "Edge density": [0.005], "Modularity": [0.02, 0.02], "Diameter": [0, 0], "Largest component size": [0, 0]})
 
 
 def common_args(parser: 'ArgumentParser'):

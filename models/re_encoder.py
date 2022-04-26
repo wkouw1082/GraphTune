@@ -40,6 +40,8 @@ class ReEncoder(nn.Module):
         self.criterion = nn.MSELoss(reduction="sum")
         # Device info
         self.device = device
+        # Acuuracy range
+        self.acc_range = params.acc_range
         
     def forward(self, dfs_codes):
         """forwarding
@@ -70,4 +72,36 @@ class ReEncoder(nn.Module):
         results = results.transpose(1, 0)[0]
         targets = targets.transpose(1, 0)[0]
         return self.criterion(results, targets)
-        
+    
+    def accuracy(self, results, targets, condition):
+        """ReEncoderの出力精度を計算する関数
+
+        Args:
+            results (torch.Tensor): ReEncoderの出力値
+            targets (torch.Tensor): グラフ特徴量のラベル
+            condition (str): 精度を計算するグラフ特徴量の名前
+
+        Returns:
+            正解率(0 ~ 1.0)
+        """
+        results = results.transpose(1, 0)[0]
+        targets = targets.transpose(1, 0)[0]
+        correct_cnt = 0
+        for pred, correct in zip(results, targets):
+            # グラフ特徴量毎にラベルを基準にした正解と判定される範囲が事前定義されているので、その範囲内にあれば正確に予測されているとみなす
+            if correct - self.acc_range[condition][0] <= pred and pred <= correct + self.acc_range[condition][1]:
+                correct_cnt += 1
+        return correct_cnt / len(results)
+    
+
+if __name__ == "__main__":
+    import sys, os
+    sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+    from config import Parameters
+    params = Parameters()
+    model = ReEncoder(input_size=172, params=params, device="cpu")
+    in_ = torch.randn([32,20,172])
+    out_ = model(in_)
+    # results = torch.Tensor([[1], [1.5], [2.0], [2.5], [3.0]])
+    # targets = torch.Tensor([[2], [2], [2], [2], [2]])
+    # model.accuracy(results, targets, params.condition_params[0])
