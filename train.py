@@ -26,6 +26,7 @@ from torchviz import make_dot
 import shutil
 import joblib
 import math
+import copy
 
 from config import common_args, Parameters
 import utils
@@ -357,7 +358,7 @@ def train_cvae_with_pre_trained_re_encoder(params, args, logger):
 				logger.info("  valid:")
 
 			# データをイレテー卜する
-			for i, (indicies, data) in enumerate(dataloader, 1):
+			for i, (indicies, data) in enumerate(dataloader, 0):
 				opt.zero_grad()   # パラメータの勾配をゼロにします
 				data = data.to(device)
 
@@ -399,8 +400,8 @@ def train_cvae_with_pre_trained_re_encoder(params, args, logger):
 					# 訓練の時だけ, 誤差逆伝搬 + 勾配クリッピング + オプティマイズする
 					if phase == "train":
 						model_loss.backward()
-	  					#TODO 勾配クリッピングの値が適切か調査
-						# torch.nn.utils.clip_grad_norm_(model.parameters(), params.model_params["clip_th"])
+	  					# 勾配クリッピング
+						torch.nn.utils.clip_grad_norm_(model.parameters(), params.model_params["clip_th"])
 						opt.step()
 						# model_lossから計算グラフを可視化
 						# dot = make_dot(model_loss, params=dict(model.named_parameters()))
@@ -593,6 +594,23 @@ def train_re_encoder(params, args, logger):
 							with open(f"./result/{params.run_date}/train/csv/valid_pred_data.csv", "a") as csv_valid_pred_val:
 		  						csv_valid_pred_val.write(f"{epoch},{out_index + params.model_params['batch_size'] * i},{graph_property[out_index].item()},{target_re_encoder[out_index].item()}\n")
 
+					# nan検知
+					if torch.isnan(model_loss):
+						logger.info(f"model lossにnanを検知.")
+						## nanを検知した時点でのmodelとoptを保存する
+						torch.save(model.state_dict(), "result/" + params.run_date + "/train/nan_iter_" + str(i) + "_weight_" + str(epoch))
+						torch.save(opt.state_dict(), "result/" + params.run_date + "/train/nan_opt_iter_" + str(i) + "_weight_" + str(epoch))
+						## nanを検知した時点の1 iter前のmodelとoptを保存する
+						torch.save(model.state_dict(), "result/" + params.run_date + "/train/pred_nan_iter_" + str(i) + "_weight_" + str(epoch))
+						torch.save(opt.state_dict(), "result/" + params.run_date + "/train/pred_nan_opt_iter_" + str(i) + "_weight_" + str(epoch))
+						## プログラム終了
+						exit()
+					else:
+						## バックアップを保存する
+						prev_model = copy.deepcopy(model)
+						prev_opt = copy.deepcopy(opt)
+
+         
 					# 訓練の時だけ, 誤差逆伝搬 + 勾配クリッピング + オプティマイズ(重みの更新)する
 					if phase == "train":
 						model_loss.backward()
