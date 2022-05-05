@@ -8,3 +8,4 @@ data/twitter_train
 data/twitter_valid
 data/twitter_test
 nohup.out
+.idea/*
