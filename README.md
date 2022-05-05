@@ -212,3 +212,8 @@ image.render("example_model_file_name")
 │  
 ├── models                  # 機械学習モデル
 ```
+
+## 新規の機械学習モデルの開発と学習
+- 新しく機械学習モデルを作成する場合は、`models`ディレクトリ直下にpythonファイルで作成する
+- 新規作成したモデルの識別名を考え、`config.py`のParameters()のmodel_setにその識別名を追加する
+- `train.py`に新規モデルの学習に必要な処理を追加する
