@@ -47,9 +47,9 @@ class Parameters:
     split_size: dict = field(default_factory=lambda: {"train": 0.9, "valid": 0.1, "test": 0}) # データセットをtrain用とvalid用に分割する際のvalid用データの比率
     reddit_path: str = "./data/reddit_threads/reddit_edges.json"
     twitter_path: str = "./data/edgelists_50/renum*"
-    twitter_train_path: str = './data/twitter_train'
-    twitter_valid_path: str = './data/twitter_valid'
-    twitter_test_path: str  = './data/twitter_test'
+    twitter_train_path: str = './dataset/twitter_train'
+    twitter_valid_path: str = './dataset/twitter_valid'
+    twitter_test_path: str  = './dataset/twitter_test'
     train_network_detail: dict = field(default_factory=lambda: {"twitter_train":[None,None,[None]]})  # preprocessでのtrain datasetの詳細. valueは[生成数, データ次元, [データセットの名前]].
     valid_network_detail: dict = field(default_factory=lambda: {"twitter_valid":[None,None,[None]]})  # preprocessでのvalid datasetの詳細. valueは[生成数, データ次元, [データセットの名前]].
     test_network_detail: dict  = field(default_factory=lambda: {"twitter_test" :[None,None,[None]]})  # preprocessでのtest datasetの詳細.  valueは[生成数, データ次元, [データセットの名前]].
