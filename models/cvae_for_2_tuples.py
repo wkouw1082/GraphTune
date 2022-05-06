@@ -1,5 +1,5 @@
 """
-Conditional Variational AutoEncoder(CVAE) を定義するモジュール.
+2-tuplesのDFSコードを学習するConditional Variational AutoEncoder(CVAE) を定義するモジュール.
 """
 
 import os
@@ -15,7 +15,7 @@ from utils import try_gpu, sample_dist, convert2onehot
 
 
 class CVAE(nn.Module):
-    """Conditional VAE class
+    """Conditional VAE class for 2-tuples DFS code
 
     input_data => CVAE(Encoder, Decoder) => output_data
     """
@@ -101,7 +101,7 @@ class CVAE(nn.Module):
 
 class Encoder(nn.Module):
     """
-    Encoder class
+    Encoder class for 2-tuples DFS code
 
     線形層1(input_size, emb_size) => LSTM(emb_size, hidden_size) => 線形層2(hidden_size, rep_size)
     """
@@ -159,7 +159,7 @@ class Encoder(nn.Module):
 
 class Decoder(nn.Module):
     """
-    Decoder class
+    Decoder class for 2-tuples DFS code
 
     () => () => () => () => ()
     """
@@ -377,8 +377,8 @@ class Decoder(nn.Module):
 
 
 if __name__ == "__main__":
-    print("cvae.py")
+    print("cvae_for_2_tuples.py")
     import config
     params = config.Parameters()
-    model = CVAE(dfs_size=173, time_size=51, node_size=34, edge_size=2, condition_size=1, params=params, device="cuda")
+    model = CVAE(dfs_size=103, time_size=51, condition_size=1, params=params, device="cuda")
     print(model)

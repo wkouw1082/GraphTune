@@ -29,7 +29,14 @@ def preprocess(params, train_directory='./dataset/train/', valid_directory='./da
     
     train_dfs, train_time_set, train_node_set, train_max_length, train_label = to_dfs_conditional(params.train_network_detail, params.dfs_mode)
     valid_dfs, valid_time_set, valid_node_set, valid_max_length, valid_label = to_dfs_conditional(params.valid_network_detail, params.dfs_mode)
-    test_dfs,  test_time_set,  test_node_set,  test_max_length,  test_label  = to_dfs_conditional(params.test_network_detail,  params.dfs_mode)
+    if not params.split_size["test"] == 0:
+        test_dfs, test_time_set, test_node_set, test_max_length, test_label = to_dfs_conditional(
+            params.test_network_detail, params.dfs_mode)
+    else:
+        # testがない場合は、trainのset{}を代入する
+        test_time_set = train_time_set
+        test_node_set = train_node_set
+        test_max_length = 0
 
     time_stamp_set = train_time_set | valid_time_set | test_time_set
     node_label_set = train_node_set | valid_node_set | test_node_set
@@ -47,7 +54,8 @@ def preprocess(params, train_directory='./dataset/train/', valid_directory='./da
     
     get_onehot_and_list(train_dfs, time_dict,node_dict, max_sequence_length, train_label, train_directory, params.ignore_label)
     get_onehot_and_list(valid_dfs, time_dict,node_dict, max_sequence_length, valid_label, valid_directory, params.ignore_label)
-    get_onehot_and_list(test_dfs,  time_dict,node_dict, max_sequence_length, test_label,  test_directory,  params.ignore_label)
+    if not params.split_size["test"] == 0:
+        get_onehot_and_list(test_dfs,  time_dict,node_dict, max_sequence_length, test_label,  test_directory,  params.ignore_label)
 
 
 def preprocess_for_2_tuples(params, train_directory='./dataset/train/', valid_directory='./dataset/valid/',

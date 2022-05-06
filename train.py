@@ -84,8 +84,9 @@ def train(params: 'config.Parameters', logger: 'logging.Logger'):
 		dfs_size_list = [time_size, time_size, node_size, node_size, edge_size]
 		train_conditional = torch.cat([train_conditional for _ in range(train_dataset.shape[1])], dim=1).unsqueeze(2)
 		valid_conditional = torch.cat([valid_conditional for _ in range(valid_dataset.shape[1])], dim=1).unsqueeze(2)
-		train_dataset = torch.cat((train_dataset, train_conditional), dim=2)
-		valid_dataset = torch.cat((valid_dataset, valid_conditional), dim=2)
+		if not use_model == "re_encoder":
+			train_dataset = torch.cat((train_dataset, train_conditional), dim=2)
+			valid_dataset = torch.cat((valid_dataset, valid_conditional), dim=2)
 		logger.info(f"\n--------------\ntime size: {time_size}\nnode size: {node_size}\nedge size: {edge_size}\nconditional size: {conditional_size}\n--------------\n")
 	elif use_model == "cvae_for_2_tuples":
 		dfs_size = 2 * time_size + conditional_size
@@ -121,7 +122,7 @@ def train(params: 'config.Parameters', logger: 'logging.Logger'):
 	if use_model == "cvae":
 		model = cvae.CVAE(dfs_size, time_size, node_size, edge_size, conditional_size, params, device)
 	elif use_model == "cvae_with_re_encoder":
-		model = cvae_with_re_encoder.CVAE(dfs_size, time_size, node_size, edge_size, conditional_size, params, device)
+		model = cvae_with_re_encoder.CVAEwithReEncoder(dfs_size, time_size, node_size, edge_size, conditional_size, params, device)
 		if params.args['re_encoder_file']:
 			model.re_encoder.load_state_dict(torch.load(args.re_encoder_file))
 		else:
@@ -210,16 +211,26 @@ def train(params: 'config.Parameters', logger: 'logging.Logger'):
 
 					# Calculate loss
 					## Encoder loss
-					if use_model == "cvae" or use_model == "cvae_with_re_encoder" or use_model == "cvae_for_2_tuples":
+					if use_model == "cvae" or use_model == "cvae_for_2_tuples":
 						encoder_loss = model.encoder.loss(mu, sigma)
+						encoder_loss_per_epoch[phase] += encoder_loss.item()
+					elif use_model == "cvae_with_re_encoder":
+						encoder_loss = model.cvae.encoder.loss(mu, sigma)
 						encoder_loss_per_epoch[phase] += encoder_loss.item()
 
 					## Decoder(Reconstruction) loss
-					if use_model == "cvae" or use_model == "cvae_with_re_encoder":
+					if use_model == "cvae":
 						results = {"tu": tu, "tv": tv, "lu": lu, "lv": lv, "le": le}
 						targets = {"tu": label[0][indicies], "tv": label[1][indicies], "lu": label[2][indicies],
 								"lv": label[3][indicies], "le": label[4][indicies]}
 						decoder_loss_dict, decoder_total_loss = model.decoder.loss(results, targets)
+						for (key, val) in decoder_loss_dict.items():
+							decoder_loss_per_epoch_dict[phase][key] += val.item()
+					elif use_model == "cvae_with_re_encoder":
+						results = {"tu": tu, "tv": tv, "lu": lu, "lv": lv, "le": le}
+						targets = {"tu": label[0][indicies], "tv": label[1][indicies], "lu": label[2][indicies],
+								"lv": label[3][indicies], "le": label[4][indicies]}
+						decoder_loss_dict, decoder_total_loss = model.cvae.decoder.loss(results, targets)
 						for (key, val) in decoder_loss_dict.items():
 							decoder_loss_per_epoch_dict[phase][key] += val.item()
 					elif use_model == "cvae_for_2_tuples":
@@ -253,8 +264,12 @@ def train(params: 'config.Parameters', logger: 'logging.Logger'):
 						model_loss_per_epoch[phase] += model_loss.item()
 					
 					# Calculate accuracy
-					if use_model == "cvae" or use_model == "cvae_with_re_encoder" or use_model == "cvae_for_2_tuples":
+					if use_model == "cvae" or use_model == "cvae_for_2_tuples":
 						acc_dict = model.decoder.accuracy(results, targets)
+						for (key, score) in acc_dict.items():
+							decoder_acc_per_epoch_dict[phase][key] += score
+					elif use_model == "cvae_with_re_encoder":
+						acc_dict = model.cvae.decoder.accuracy(results, targets)
 						for (key, score) in acc_dict.items():
 							decoder_acc_per_epoch_dict[phase][key] += score
 					
