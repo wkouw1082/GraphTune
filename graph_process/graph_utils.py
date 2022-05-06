@@ -90,8 +90,9 @@ def dfs_code_to_graph_obj(dfs_code,end_value_list, edge_num=None):
                 if current_code[i] == end_value_list[i]-1:
                     return G
 
-        tu,tv,_,_,_ = current_code
-        G.add_edge(tu,tv)
+        tuples = []
+        tuples = current_code
+        G.add_edge(tuples[0], tuples[1])
     return G
 
 

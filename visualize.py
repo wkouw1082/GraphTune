@@ -17,7 +17,7 @@ from graph_process import complex_networks
 import bi
 
 
-def graph_plot(params, args):
+def graph_plot(params):
 	"""グラフ特徴量をplotするための関数.
 
 	Args:
@@ -27,14 +27,14 @@ def graph_plot(params, args):
 	calc_graph_statistic = graph_statistic.GraphStatistic()
 	
 	# eval.py で生成されたグラフの特徴量をcsvへ書き出し
-	if args.eval_graphs:
-		print("args.eval_graphs をチェック.")
-		if args.eval_graphs[-1] != "/":
+	if params.args['eval_graphs']:
+		print("params.args['eval_graphs'] をチェック.")
+		if params.args['eval_graphs'][-1] != "/":
 			print("パスの末尾に / を付けてください.")
 			exit()
 		print("生成されたグラフを読み込み.")
-		visualize_dir = "result/" + args.eval_graphs.split("/")[1] + "/visualize/"
-		graph_files = glob.glob(args.eval_graphs + "*")     # 生成されたグラフのパスのリスト
+		visualize_dir = "result/" + params.args['eval_graphs'].split("/")[1] + "/visualize/"
+		graph_files = glob.glob(params.args['eval_graphs'] + "*")     # 生成されたグラフのパスのリスト
 		for graph_file in graph_files:
 			with open(graph_file, "rb") as f:
 				graphs = joblib.load(f)
@@ -164,10 +164,9 @@ def graph_visualize(graph_path, result_dir=None, sampling_num=10):
 if __name__ == "__main__":
 	parser = argparse.ArgumentParser()
 	parser = common_args(parser)
-	parser.add_argument('--eval_graphs')		# 生成されたグラフが保存されているディレクトリ
 	args = parser.parse_args()
-	params = Parameters(**setup_params(vars(args), args.parameters))  # args，run_date，git_revisionなどを追加した辞書を取得
+	params = Parameters(**setup_params(vars(args)))  # args，run_date，git_revisionなどを追加した辞書を取得
  
 	# visualize
-	graph_plot(params, args)
+	graph_plot(params)
 	# graph_visualize(args.eval_graphs+"*")

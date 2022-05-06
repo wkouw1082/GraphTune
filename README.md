@@ -27,27 +27,35 @@ pip install -r requirements.txt
     - https://pytorch.org/get-started/previous-versions/
 
 ## Training
-- Modelの学習をバックグラウンドで実行(`train.py`を修正する必要あり).
+- GraphTuneの学習をバックグラウンドで実行(`train.py`を修正する必要あり).
 ```shell
-nohup python -u train.py --preprocess &
+nohup python -u train.py --preprocess --use_model cvae &
 ```
 - Modelのチェックポイントから学習を再開する例(前処理されたdatasetは統一することに注意).
 ```shell
-nohup python -u train.py --checkpoint_file result/{結果出力ファイル名}/train/weight_35000 --init_epoch 35001 &
+nohup python -u train.py --use_model cvae --checkpoint_file result/{結果出力ファイル名}/train/weight_35000 --init_epoch 35001 &
+```
+- ReEncoderの事前学習
+```shell
+nohup python -u train.py --preprocess --use_model re_encoder &
 ```
 - 事前学習済みReEncoderを用いたCVAEの学習の例.
 ```shell
-nohup python -u train.py --preprocess --re_encoder_file result/{結果出力ファイル名}/train/valid_best_weight &
+nohup python -u train.py --preprocess --use_model cvae_with_re_encoder --re_encoder_file result/{結果出力ファイル名}/train/valid_best_weight &
+```
+- 2-tuplesのDFSコードを扱うGraphTuneの学習
+```shell
+nohup python -u train.py --preprocess --preprocess_type dfs_2_tuples --use_model cvae_for_2_tuples &
 ```
 
 ## Evaluation
-- 学習済みモデルを使用して条件付きグラフ生成.
+- 学習済みモデルを使用して条件付きグラフ生成をする例.
 ```shell
-python eval.py --eval_model result/{結果出力ファイル名}/train/valid_best_weight
+python eval.py --use_model cvae --eval_model result/{結果出力ファイル名}/train/valid_best_weight
 ```
 
 ## Visualization
-- 生成されたグラフをplotする.
+- 生成されたグラフをplotする例.
 ```shell
 python visualize.py --eval_graphs result/{結果出力ファイル名}/eval/
 ```
@@ -83,8 +91,18 @@ image.render("example_model_file_name")
 - 指定できるパラメータは以下の通り. 詳細は`config.py`を参照.
 ```json
 {
-    "run_date": "20220331_015910",
-    "git_revision": "c3c148f122670779ebebdbfc3bd46ae456c81fcb\n",
+    "args": {
+        "parameters": null,
+        "arg1": 0,
+        "arg2": 1.0,
+        "preprocess": true,
+        "use_model": "VAEwithReEncoder",
+        "re_encoder_file": null,
+        "checkpoint_file": null,
+        "init_epoch": null
+    },
+    "run_date": "20220505_212813",
+    "git_revision": "d8bcffadc7c4de909d2407c4e6297df924566908\n",
     "conditional_mode": true,
     "condition_params": [
         "Average path length"
@@ -133,11 +151,16 @@ image.render("example_model_file_name")
             20.0
         ]
     },
-    "test_size": 0.1,
+    "split_size": {
+        "train": 0.9,
+        "valid": 0.1,
+        "test": 0
+    },
     "reddit_path": "./data/reddit_threads/reddit_edges.json",
     "twitter_path": "./data/edgelists_50/renum*",
     "twitter_train_path": "./data/twitter_train",
-    "twitter_valid_path": "./data/twitter_eval",
+    "twitter_valid_path": "./data/twitter_valid",
+    "twitter_test_path": "./data/twitter_test",
     "train_network_detail": {
         "twitter_train": [
             null,
@@ -156,6 +179,15 @@ image.render("example_model_file_name")
             ]
         ]
     },
+    "test_network_detail": {
+        "twitter_test": [
+            null,
+            null,
+            [
+                null
+            ]
+        ]
+    },
     "dfs_mode": "normal",
     "ignore_label": 1500,
     "power_degree_border_line": 0.7,
@@ -163,7 +195,7 @@ image.render("example_model_file_name")
     "word_drop_rate": 0,
     "model_params": {
         "batch_size": 37,
-        "clip_th": 0.002362780918168105,
+        "clip_th": 10,
         "de_hidden_size": 250,
         "emb_size": 227,
         "re_en_hidden_size": 223,
@@ -177,7 +209,7 @@ image.render("example_model_file_name")
         "gamma": 3
     },
     "epochs": 100000,
-    "model_save_point": 100,
+    "model_save_point": 500,
     "eval_params": [
         "Power-law exponent",
         "Clustering coefficient",
@@ -190,7 +222,55 @@ image.render("example_model_file_name")
     ],
     "sampling_generation": true,
     "generate_edge_num": 100,
-    "size_th": 0
+    "size_th": 0,
+    "visualize_detail": {
+        "twitter_pickup": [
+            300,
+            null,
+            [
+                null
+            ]
+        ]
+    },
+    "visualize_types": {
+        "Real_data": "bbb",
+        "AveragePathLength_3.0": "aaa",
+        "AveragePathLength_0.4": "yyy",
+        "Average_PathLength_0.5": "xxx"
+    },
+    "acc_range": {
+        "Power-law exponent": [
+            0.1,
+            0.1
+        ],
+        "Clustering coefficient": [
+            0.01,
+            0.01
+        ],
+        "Average path length": [
+            0.05,
+            0.05
+        ],
+        "Average degree": [
+            0.1,
+            0.1
+        ],
+        "Edge density": [
+            0.005
+        ],
+        "Modularity": [
+            0.02,
+            0.02
+        ],
+        "Diameter": [
+            0,
+            0
+        ],
+        "Largest component size": [
+            0,
+            0
+        ]
+    }
 }
 ```
 

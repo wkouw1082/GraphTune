@@ -74,19 +74,17 @@ class Parameters:
     """
     
     # Train
-<<<<<<< HEAD
     epochs: int = 100000   # エポック数
-=======
-    epochs: int = 40000          # エポック数
->>>>>>> db4aee3b7082c96aeea9b6466b2dc5bc4300f7d3
     model_save_point: int = 500  # modelをsaveするチェックポイント(エポック数)
     
     # Eval
     # 現状、"power_degree", "cluster_coefficient", "distance", "size"
     eval_params: list = field(default_factory=lambda: ["Power-law exponent", "Clustering coefficient", "Average path length", "Average degree" ,"Edge density", "Modularity", "Diameter","Largest component size"])
-    sampling_generation: bool = True    # 生成時に出力される分布からサンプリングするか最大値から取るか
-    generate_edge_num: int = 100        # 生成するgraphのエッジの数
-    size_th: int = 0                    # 評価に用いるネットワークのサイズの閾値
+    sampling_generation: bool = True        # 生成時に出力される分布からサンプリングするか最大値から取るか
+    generate_edge_num: int = 100            # 生成するgraphのエッジの数
+    number_of_generated_samples: int = 300  # 生成されるグラフサンプルの数
+    size_th: int = 0                        # 評価に用いるネットワークのサイズの閾値
+    label_normalize: bool = True            # 生成時に与えるラベル情報を正規化するかどうか
 
     # Visualize
     visualize_detail: dict = field(default_factory=lambda: {
@@ -119,6 +117,13 @@ def common_args(parser: 'ArgumentParser'):
     ## チェックポイントから学習を始める場合
     parser.add_argument('--checkpoint_file', help="loadするモデルへのPATH", default=None)  # loadするモデルのPATH
     parser.add_argument('--init_epoch', type=str, default=None)  # epochの初期値
+    
+    # Eval
+    parser.add_argument("--eval_model", help="評価対象のモデルへのPATH", type=str, default=None)
+  
+    # Visualize
+    parser.add_argument('--eval_graphs', help="生成されたグラフが格納されているディレクトリへのPATH", type=str, default=None)		# 生成されたグラフが保存されているディレクトリ
+    
     return parser
 
 
