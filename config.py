@@ -75,7 +75,7 @@ class Parameters:
     """
     
     # Train
-    epochs: int = 30000   # エポック数
+    epochs: int = 100000   # エポック数
     model_save_point: int = 500  # modelをsaveするチェックポイント(エポック数)
     
     # Eval
