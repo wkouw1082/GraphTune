@@ -269,11 +269,11 @@ class Decoder(nn.Module):
         x, (h, c) = self.lstm(x, (h_0, c_0))
         x = self.dropout(x)
 
-        tu = self.softmax(self.f_tu(x))
-        tv = self.softmax(self.f_tv(x))
-        lu = self.softmax(self.f_lu(x))
-        lv = self.softmax(self.f_lv(x))
-        le = self.softmax(self.f_le(x))
+        tu = self.f_tu(x)
+        tv = self.f_tv(x)
+        lu = self.f_lu(x)
+        lv = self.f_lv(x)
+        le = self.f_le(x)
         return tu, tv, lu, lv, le
 
     def generate(self, rep, conditional_label, max_size=100, is_output_sampling=True):
