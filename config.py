@@ -59,13 +59,12 @@ class Parameters:
     # Graph properties
     power_degree_border_line: float = 0.7 # 次数分布の冪指数を出すときに大多数のデータに引っ張られるせいで１次元プロットが正しい値から離れてしまうのでいくつかの値を除いて導出するための除く割合
     
-    
     # Models
+    model_set: list = field(default_factory=lambda: ["cvae", "cvae_with_re_encoder", "re_encoder", "cvae_for_2_tuples"])
     dropout: float = 0.5        # dropout層に入力されたデータをdropさせる割合
-    word_drop_rate: float = 0   # word drop rate
     ## model hyper parameters
     model_params: dict = field(default_factory=lambda: {'batch_size': 37, 'clip_th': 10, 'de_hidden_size': 250, 'emb_size': 227, "re_en_hidden_size": 223, 'en_hidden_size': 223,
-                                                       'lr': 0.001, 'rep_size': 10, "re_en_rep_size": 1, 'weight_decay': 0,
+                                                       'lr': 0.001, 'rep_size': 10, "re_en_rep_size": 1, 'weight_decay': 0, 'word_drop': 0,
                                                        "alpha": 1, "beta": 3, "gamma": 3})
     """model parameters
     以前、tuningして得たbest params
@@ -75,7 +74,11 @@ class Parameters:
     """
     
     # Train
+<<<<<<< HEAD
     epochs: int = 100000   # エポック数
+=======
+    epochs: int = 40000          # エポック数
+>>>>>>> db4aee3b7082c96aeea9b6466b2dc5bc4300f7d3
     model_save_point: int = 500  # modelをsaveするチェックポイント(エポック数)
     
     # Eval
@@ -105,9 +108,17 @@ def common_args(parser: 'ArgumentParser'):
         Args:
             parser (:obj: ArgumentParser):
     """
-    parser.add_argument("-p", "--parameters", help="パラメータ設定ファイルのパスを指定．デフォルトはNone", type=str, default=None)
-    parser.add_argument("-a", "--arg1", type=int, help="arg1の説明", default=0)  # コマンドライン引数を指定
-    parser.add_argument("--arg2", type=float, help="arg2の説明", default=1.0)  # コマンドライン引数を指定
+    # Train
+    ## preprocess
+    parser.add_argument("--preprocess", help="train前にデータセットの前処理を行う", default=False, action='store_true')
+    ### 前処理で呼び出す関数の種類を["dfs_5_tuples", "dfs_2_tuples"]のフラグから選ぶ
+    parser.add_argument("--preprocess_type", help="前処理の種類", type=str, default="dfs_5_tuples")
+    ## model
+    parser.add_argument('--use_model', type=str, help="使用するモデル名", default=None)    # 学習対象のmodelをmodel_setから選択する
+    parser.add_argument('--re_encoder_file', type=str, help="事前学習済みReEncoderの重みへのPATH", default=None)  # 事前学習されたReEncoderの重みへのPATHを指定
+    ## チェックポイントから学習を始める場合
+    parser.add_argument('--checkpoint_file', help="loadするモデルへのPATH", default=None)  # loadするモデルのPATH
+    parser.add_argument('--init_epoch', type=str, default=None)  # epochの初期値
     return parser
 
 

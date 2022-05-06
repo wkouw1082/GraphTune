@@ -267,9 +267,9 @@ def get_onehot_and_list_2_tuples(dfs_code, time_dict, node_dict, max_sequence_le
     t_u_list = torch.LongTensor(utils.padding(t_u_list, max_sequence_length, ignore_label))
     t_v_list = torch.LongTensor(utils.padding(t_v_list, max_sequence_length, ignore_label))
 
-    joblib.dump(dfs_code_onehot_list, directory + 'onehot_2_tuples')
-    joblib.dump([t_u_list, t_v_list], directory + 'label_2_tuples')
-    joblib.dump(label_set, directory + 'conditional_2_tuples')
+    joblib.dump(dfs_code_onehot_list, directory + 'onehot')
+    joblib.dump([t_u_list, t_v_list], directory + 'label')
+    joblib.dump(label_set, directory + 'conditional')
 
 if __name__ == "__main__":
     from config import Parameters

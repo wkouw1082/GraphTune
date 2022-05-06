@@ -27,11 +27,12 @@ class CVAE(nn.Module):
         self.rep_size = params.model_params["rep_size"]
         self.alpha = params.model_params["alpha"]
         self.beta = params.model_params["beta"]
+        self.word_drop = params.model_params["word_drop"]
         self.device = device
         self.encoder = Encoder(dfs_size, emb_size, en_hidden_size, self.rep_size, self.device)
         self.decoder = Decoder(self.rep_size, dfs_size, emb_size, de_hidden_size, time_size, node_size, edge_size, condition_size, params, self.device)
 
-    def forward(self, x, word_drop=0):
+    def forward(self, x):
         mu, sigma = self.encoder(x)
         z = self.transformation(mu, sigma, self.device)
         tu, tv, lu, lv, le = self.decoder(z, x)
@@ -142,7 +143,7 @@ class Encoder(nn.Module):
         x = x[:, -1, :].unsqueeze(1)
         return self.mu(x), self.sigma(x)
 
-    def loss(mu, sigma):
+    def loss(self, mu, sigma):
         """正規分布とのKL divergenceを計算する関数
 
         Args:
