@@ -33,6 +33,9 @@ def train(params: 'config.Parameters', logger: 'logging.Logger'):
 			params (config.Parameters)  : global変数のset
 			logger (logging.Logger)	    : logging
 	"""
+	# Seed値の固定
+	utils.fix_seed(params.seed)
+
 	# Tensorboardの設定
 	writer = SummaryWriter(log_dir=f"./result/{params.run_date}")
 
@@ -99,6 +102,10 @@ def train(params: 'config.Parameters', logger: 'logging.Logger'):
 		logger.info("そのようなモデルは存在しません.")
 		exit()
 
+	# Dataloaderのseed固定
+	g = torch.Generator()
+	g.manual_seed(params.seed)
+
 	# dataloaderを作成
 	train_data_num = train_dataset.shape[0]
 	train_label_args = torch.LongTensor(list(range(train_data_num)))
@@ -109,13 +116,15 @@ def train(params: 'config.Parameters', logger: 'logging.Logger'):
 		shuffle=True,										# epoch毎にdataがshuffleされる
 		batch_size=params.model_params["batch_size"],		# mini-batchサイズ
 		drop_last=False,									# 指定したbacth_sizeでdataを割り切れなかった時、最後のバッチをdropしない
-		pin_memory=True										# TensorをCUDAのpinされたメモリへコピーする
+		pin_memory=True,									# TensorをCUDAのpinされたメモリへコピーする
+		generator=g											# 乱数生成器を指定
 	)
 	valid_dl = DataLoader(
 		TensorDataset(valid_label_args, valid_dataset),
 		shuffle=False,
 		batch_size=params.model_params["batch_size"],
-		pin_memory=True
+		pin_memory=True,
+		generator=g
 	)
 
 	# 学習するモデルの定義

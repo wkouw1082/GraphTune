@@ -12,6 +12,7 @@ from typing import Any
 import glob
 import numpy as np
 import pandas as pd
+import random
 
 
 def get_git_revision() -> str:
@@ -290,3 +291,21 @@ def concat_csv(csv_paths):
         df_concat = pd.concat([df_concat,df_add])
 
     return df_concat
+
+def fix_seed(seed: int):
+    """再現性のために、Seed値を固定する関数.
+
+    Args:
+        seed (int): seed値
+    """
+    # random
+    random.seed(seed)
+    # Numpy
+    np.random.seed(seed)
+    # Pytorch
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    torch.backends.cudnn.deterministic = True   # GPUの処理を決定的にする
+    torch.use_deterministic_algorithms = True   # PyTorch操作で決定論的アルゴリズムを使用する
+                                                # 利用可能な決定論的アルゴリズムがない場合はError
+    torch.backends.cudnn.benchmark = False      # 畳み込み演算の箇所の再現性
