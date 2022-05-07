@@ -5,6 +5,7 @@
 import joblib
 import numpy as np
 import torch
+import matplotlib.pyplot as plt
 
 from graph_process import complex_networks, convert_to_dfs_code
 import utils
@@ -37,6 +38,45 @@ def preprocess(params, train_directory='./dataset/train/', valid_directory='./da
         test_time_set = train_time_set
         test_node_set = train_node_set
         test_max_length = 0
+    
+    # label standardization
+    if params.standardize:
+        if params.split_size["test"] == 0:
+            label_data_list = [train_label, valid_label]
+        else:
+            label_data_list = [train_label, valid_label, test_label]
+        # Standardization(train, valid, testそれぞれで平均・標準偏差を算出して標準化)
+        for label_data in label_data_list:
+            std_, mean_ = torch.std_mean(label_data, unbiased=True)
+            for i, label in enumerate(label_data):
+                label_data[i] = (label - mean_) / max(std_, 1e-7)
+                
+    # label normalization
+    if params.normalize:
+        if params.split_size["test"] == 0:
+            label_data_list = [train_label, valid_label]
+        else:
+            label_data_list = [train_label, valid_label, test_label]
+        # 最大値と最小値をtrainから探す
+        train_max_val, train_min_val = -1, 10000
+        for i, label in enumerate(train_label):
+            if train_max_val < label.item():
+                train_max_val = label.item()
+            if train_min_val > label.item():
+                train_min_val = label.item()
+        # Normalization(trainに合わせて正規化)
+        for label_data in label_data_list:
+            for i, label in enumerate(label_data):
+                label_data[i] = (label - train_min_val) / (train_max_val - train_min_val)
+        # 正規化後のデータをplot
+        # for j, label_data in enumerate(label_data_list, 0):
+        #     x = [i for i in range(label_data.shape[0])]
+        #     y = [val.item() for val in label_data]
+        #     plt.plot(x, y, 'o')
+        #     plt.show()
+        #     plt.savefig(f"{j}.png")
+        #     plt.clf()
+        #     plt.close()
 
     time_stamp_set = train_time_set | valid_time_set | test_time_set
     node_label_set = train_node_set | valid_node_set | test_node_set
@@ -89,22 +129,44 @@ def preprocess_for_2_tuples(params, train_directory='./dataset/train/', valid_di
         test_node_set = train_node_set
         test_max_length = 0
 
+    # label standardization
+    if params.standardize:
+        if params.split_size["test"] == 0:
+            label_data_list = [train_label, valid_label]
+        else:
+            label_data_list = [train_label, valid_label, test_label]
+        # Standardization(train, valid, testそれぞれで平均・標準偏差を算出して標準化)
+        for label_data in label_data_list:
+            std_, mean_ = torch.std_mean(label_data, unbiased=True)
+            for i, label in enumerate(label_data):
+                label_data[i] = (label - mean_) / max(std_, 1e-7)
+
     # label normalization
-    if params.split_size["test"] == 0:
-        label_data_list = [train_label, valid_label]
-    else:
-        label_data_list = [train_label, valid_label, test_label]
-    for label_data in label_data_list:
-        # Search max, min
-        max_val, min_val = -1, 10000
-        for i, label in enumerate(label_data):
-            if max_val < label.item():
-                max_val = label.item()
-            if min_val > label.item():
-                min_val = label.item()
-        # Normalization
-        for i, label in enumerate(label_data):
-            label_data[i] = (label - min_val) / (max_val - min_val)
+    if params.normalize:
+        if params.split_size["test"] == 0:
+            label_data_list = [train_label, valid_label]
+        else:
+            label_data_list = [train_label, valid_label, test_label]
+        # 最大値と最小値をtrainから探す
+        train_max_val, train_min_val = -1, 10000
+        for i, label in enumerate(train_label):
+            if train_max_val < label.item():
+                train_max_val = label.item()
+            if train_min_val > label.item():
+                train_min_val = label.item()
+        # Normalization(trainに合わせて正規化)
+        for label_data in label_data_list:
+            for i, label in enumerate(label_data):
+                label_data[i] = (label - train_min_val) / (train_max_val - train_min_val)
+        # 正規化後のデータをplot
+        # for j, label_data in enumerate(label_data_list, 0):
+        #     x = [i for i in range(label_data.shape[0])]
+        #     y = [val.item() for val in label_data]
+        #     plt.plot(x, y, 'o')
+        #     plt.show()
+        #     plt.savefig(f"{j}.png")
+        #     plt.clf()
+        #     plt.close()
 
     time_stamp_set = train_time_set | valid_time_set | test_time_set
     node_label_set = train_node_set | valid_node_set | test_node_set

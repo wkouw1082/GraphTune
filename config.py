@@ -54,7 +54,9 @@ class Parameters:
     valid_network_detail: dict = field(default_factory=lambda: {"twitter_valid":[None,None,[None]]})  # preprocessでのvalid datasetの詳細. valueは[生成数, データ次元, [データセットの名前]].
     test_network_detail: dict  = field(default_factory=lambda: {"twitter_test" :[None,None,[None]]})  # preprocessでのtest datasetの詳細.  valueは[生成数, データ次元, [データセットの名前]].
     dfs_mode: str = "normal"  # ["high_degree_first", "normal", "low_degree_first"]から選択できる.
-    ignore_label: int = 1500  # 5-tuples内のデータにおいて、無視するデータ
+    ignore_label: int = 1500  # 5-tuples内のデータにおいて、無視するデー
+    normalize: bool = False   # conditionのデータを正規化する
+    standardize: bool = True  # conditionのデータを標準化する
     
     # Graph properties
     power_degree_border_line: float = 0.7 # 次数分布の冪指数を出すときに大多数のデータに引っ張られるせいで１次元プロットが正しい値から離れてしまうのでいくつかの値を除いて導出するための除く割合
@@ -97,6 +99,7 @@ class Parameters:
     ## グラフ特徴量の精度を計算する時、正解と分類される値の範囲([a, b] = {x-a <= x <= x+b | xはグラフ特徴量})
     acc_range: dict = field(default_factory=lambda: {"Power-law exponent": [0.1, 0.1], "Clustering coefficient": [0.01, 0.01], "Average path length": [0.05, 0.05], "Average degree": [0.1, 0.1],
                                                      "Edge density": [0.005], "Modularity": [0.02, 0.02], "Diameter": [0, 0], "Largest component size": [0, 0]})
+    seed: int = 42  # すべての乱数生成器のseed
 
 
 def common_args(parser: 'ArgumentParser'):
