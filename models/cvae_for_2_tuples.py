@@ -122,7 +122,6 @@ class Encoder(nn.Module):
         self.lstm = nn.LSTM(emb_size, hidden_size, num_layers=num_layer, batch_first=True)
         self.mu = nn.Linear(hidden_size, rep_size)
         self.sigma = nn.Linear(hidden_size, rep_size)
-        self.relu = nn.ReLU()
         self.device = device
         self.num_layer = num_layer
         self.hidden_size = hidden_size
@@ -139,9 +138,9 @@ class Encoder(nn.Module):
         """
         x = self.emb(x)
         # x = torch.cat((x,label),dim=2)
-        x, (h, c) = self.lstm(self.relu(x))
+        x, (h, c) = self.lstm(x)
         x = x[:, -1, :].unsqueeze(1)
-        return self.relu(self.mu(x)), self.relu(self.sigma(x))
+        return self.mu(x), self.sigma(x)
 
     def loss(self, mu, sigma):
         """正規分布とのKL divergenceを計算する関数
@@ -193,7 +192,6 @@ class Decoder(nn.Module):
         self.f_tu = nn.Linear(hidden_size, time_size)
         self.f_tv = nn.Linear(hidden_size, time_size)
 
-        self.relu = nn.ReLU()
         self.softmax = nn.Softmax(dim=2)
         self.dropout = nn.Dropout(0.5)
 
@@ -221,7 +219,7 @@ class Decoder(nn.Module):
         rep = torch.cat([rep, conditional], dim=2)
 
         origin_rep = rep
-        rep = self.relu(self.f_rep(rep))
+        rep = self.f_rep(rep)
         # rep = self.dropout(rep)
 
         x = torch.cat((rep, x), dim=1)[:, :-1, :]
@@ -244,12 +242,12 @@ class Decoder(nn.Module):
             args = random.choices([i for i in range(x.shape[1])], k=int(x.shape[1] * word_drop))
             zero = try_gpu(self.device, torch.zeros([1, 1, x.shape[2] - self.condition_size]))
             x[batch, args, :-1 * self.condition_size] = zero
-        x = self.relu(self.emb(x))
+        x = self.emb(x)
         rep = torch.cat([origin_rep for _ in range(x.shape[1])], dim=1)
         x = torch.cat((x, rep), dim=2)
 
         x, (h, c) = self.lstm(x, (h_0, c_0))
-        x = self.dropout(self.relu(x))
+        x = self.dropout(x)
 
         return self.f_tu(x), self.f_tv(x)
 
@@ -271,8 +269,8 @@ class Decoder(nn.Module):
 
         origin_rep = rep
 
-        rep = self.relu(self.f_rep(rep))
-        rep = self.relu(self.emb(rep))
+        rep = self.f_rep(rep)
+        rep = self.emb(rep)
         x = rep
         x = torch.cat((x, origin_rep), dim=2)
         batch_size = x.shape[0]
@@ -293,7 +291,7 @@ class Decoder(nn.Module):
                 x, (h, c) = self.lstm(x, (h_0, c_0))
                 # x, (h, c) = self.lstm(x)
             else:
-                x = self.relu(self.emb(x))
+                x = self.emb(x)
                 x = torch.cat((x, origin_rep), dim=2)
                 x, (h, c) = self.lstm(x, (h, c))
 

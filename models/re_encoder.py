@@ -36,8 +36,6 @@ class ReEncoder(nn.Module):
         self.lstm = nn.LSTM(params.model_params["emb_size"], params.model_params["re_en_hidden_size"], num_layers=num_layer, batch_first=True)
         # 線形層2
         self.calc_graph_property = nn.Linear(params.model_params["re_en_hidden_size"], params.model_params["re_en_rep_size"])
-        # 活性化関数(ReLU)
-        self.relu = nn.ReLU()
         # Loss function
         self.criterion = nn.MSELoss(reduction="sum")
         # Device info
@@ -54,7 +52,7 @@ class ReEncoder(nn.Module):
         Returns:
             (torch.tensor[rep_size]): ReEncoderのoutput
         """
-        embedded_dfs_codes = self.relu(self.emb(dfs_codes))
+        embedded_dfs_codes = self.emb(dfs_codes)
         # x = torch.cat((x,label),dim=2)
         output, (h,c) = self.lstm(embedded_dfs_codes)
         output = output[:, -1, :].unsqueeze(1)
