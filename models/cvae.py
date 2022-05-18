@@ -226,17 +226,9 @@ class Decoder(nn.Module):
         conditional = x[:, 0, -1 * self.condition_size:].unsqueeze(1)
 
         rep = torch.cat([rep, conditional], dim=2)
-
-        origin_rep = rep
-        rep = self.f_rep(rep)
-        # rep = self.dropout(rep)
-
-        x = torch.cat((rep, x), dim=1)[:, :-1, :]
+        
         h_0 = try_gpu(self.device, torch.Tensor())
         c_0 = try_gpu(self.device, torch.Tensor())
-
-        batch_size = x.shape[0]
-
         for batch in range(x.shape[0]):
             conditional_value = x[batch, 0, -1 * self.condition_size].item()
             h_0 = torch.cat(
@@ -245,6 +237,24 @@ class Decoder(nn.Module):
             c_0 = torch.cat(
                 (c_0, try_gpu(self.device, torch.Tensor(self.num_layer, 1, self.hidden_size).fill_(conditional_value))),
                 dim=1)
+
+        origin_rep = rep
+        rep = self.f_rep(rep)
+        # rep = self.dropout(rep)
+
+        x = torch.cat((rep, x), dim=1)[:, :-1, :]
+        
+
+        batch_size = x.shape[0]
+
+        # for batch in range(x.shape[0]):
+        #     conditional_value = x[batch, 0, -1 * self.condition_size].item()
+        #     h_0 = torch.cat(
+        #         (h_0, try_gpu(self.device, torch.Tensor(self.num_layer, 1, self.hidden_size).fill_(conditional_value))),
+        #         dim=1)
+        #     c_0 = torch.cat(
+        #         (c_0, try_gpu(self.device, torch.Tensor(self.num_layer, 1, self.hidden_size).fill_(conditional_value))),
+        #         dim=1)
 
         # word drop
         for batch in range(x.shape[0]):

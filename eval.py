@@ -71,7 +71,7 @@ def eval(params, logger):
     conditional_labels = utils.get_condition_values(params.condition_params, params.condition_values)
     
     # label normalization (trainデータのスケールで正規化)
-    if params.label_normalize:
+    if params.normalize:
         datasets = joblib.load(params.twitter_train_path)
         train_label = datasets[1]
         # Search max, min

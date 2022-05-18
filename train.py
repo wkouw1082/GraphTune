@@ -34,7 +34,7 @@ def train(params: 'config.Parameters', logger: 'logging.Logger'):
 			logger (logging.Logger)	    : logging
 	"""
 	# Seed値の固定
-	utils.fix_seed(params.seed)
+	# utils.fix_seed(params.seed)
 
 	# Tensorboardの設定
 	writer = SummaryWriter(log_dir=f"./result/{params.run_date}")
@@ -103,9 +103,30 @@ def train(params: 'config.Parameters', logger: 'logging.Logger'):
 		exit()
 
 	# Dataloaderのseed固定
-	g = torch.Generator()
-	g.manual_seed(params.seed)
+	# g = torch.Generator()
+	# g.manual_seed(params.seed)
 
+	# dataloaderを作成
+	# train_data_num = train_dataset.shape[0]
+	# train_label_args = torch.LongTensor(list(range(train_data_num)))
+	# valid_data_num = valid_dataset.shape[0]
+	# valid_label_args = torch.LongTensor(list(range(valid_data_num)))
+	# train_dl = DataLoader(
+	# 	TensorDataset(train_label_args, train_dataset),
+	# 	shuffle=True,										# epoch毎にdataがshuffleされる
+	# 	batch_size=params.model_params["batch_size"],		# mini-batchサイズ
+	# 	drop_last=False,									# 指定したbacth_sizeでdataを割り切れなかった時、最後のバッチをdropしない
+	# 	pin_memory=True,									# TensorをCUDAのpinされたメモリへコピーする
+	# 	generator=g											# 乱数生成器を指定
+	# )
+	# valid_dl = DataLoader(
+	# 	TensorDataset(valid_label_args, valid_dataset),
+	# 	shuffle=False,
+	# 	batch_size=params.model_params["batch_size"],
+	# 	pin_memory=True,
+	# 	generator=g
+	# )
+ 
 	# dataloaderを作成
 	train_data_num = train_dataset.shape[0]
 	train_label_args = torch.LongTensor(list(range(train_data_num)))
@@ -114,17 +135,12 @@ def train(params: 'config.Parameters', logger: 'logging.Logger'):
 	train_dl = DataLoader(
 		TensorDataset(train_label_args, train_dataset),
 		shuffle=True,										# epoch毎にdataがshuffleされる
-		batch_size=params.model_params["batch_size"],		# mini-batchサイズ
-		drop_last=False,									# 指定したbacth_sizeでdataを割り切れなかった時、最後のバッチをdropしない
-		pin_memory=True,									# TensorをCUDAのpinされたメモリへコピーする
-		generator=g											# 乱数生成器を指定
+		batch_size=params.model_params["batch_size"]		# mini-batchサイズ
 	)
 	valid_dl = DataLoader(
 		TensorDataset(valid_label_args, valid_dataset),
 		shuffle=False,
-		batch_size=params.model_params["batch_size"],
-		pin_memory=True,
-		generator=g
+		batch_size=params.model_params["batch_size"]
 	)
 
 	# 学習するモデルの定義
@@ -181,7 +197,7 @@ def train(params: 'config.Parameters', logger: 'logging.Logger'):
 			encoder_loss_per_epoch = {"train": 0., "valid": 0.}
 			five_tuples_dict = {"tu": 0., "tv": 0., "lu": 0., "lv": 0., "le": 0.}
 			decoder_loss_per_epoch_dict = {"train": five_tuples_dict.copy(), "valid": five_tuples_dict.copy()}
-			decoder_acc_per_epoch_dict = {"train": five_tuples_dict.copy(), "valid": five_tuples_dict.copy()}
+			decoder_acc_per_epoch_dict  = {"train": five_tuples_dict.copy(), "valid": five_tuples_dict.copy()}
 		if use_model == "cvae_with_re_encoder":
 			re_encoder_loss_per_epoch = {"train": 0., "valid": 0.}
 		model_loss_per_epoch = {"train": 0., "valid": 0.}
@@ -228,6 +244,7 @@ def train(params: 'config.Parameters', logger: 'logging.Logger'):
 						encoder_loss_per_epoch[phase] += encoder_loss.item()
 
 					## Decoder(Reconstruction) loss
+					# TODO decoderのloss関数の返すdictはtensorでないfloatだけにする。total lossはtensorでよい。
 					if use_model == "cvae":
 						results = {"tu": tu, "tv": tv, "lu": lu, "lv": lv, "le": le}
 						targets = {"tu": label[0][indicies], "tv": label[1][indicies], "lu": label[2][indicies],
@@ -322,8 +339,9 @@ def train(params: 'config.Parameters', logger: 'logging.Logger'):
 					# 訓練の時だけ, 誤差逆伝搬 + 勾配クリッピング + オプティマイズする
 					if phase == "train":
 						model_loss.backward()
-						torch.nn.utils.clip_grad_norm_(model.parameters(), params.model_params["clip_th"])
+      					# torch.nn.utils.clip_grad_norm_(model.parameters(), params.model_params["clip_th"])
 						opt.step()
+						torch.nn.utils.clip_grad_norm_(model.parameters(), params.model_params["clip_th"])
 
 			# model_lossから計算グラフを可視化
 			# dot = make_dot(model_loss, params=dict(model.named_parameters()))

@@ -30,7 +30,7 @@ class Parameters:
     # Condition
     conditional_mode: bool = True   # 条件付き学習, 条件付き生成を行う場合はTrue
     condition_params: list = field(default_factory=lambda: ["Average path length"])  # preprocessでconditionとして与えるparameter
-    condition_round: int = 4    # conditionの値の丸める桁数
+    condition_round: int = 1    # conditionの値の丸める桁数
     condition_size: int = 1     # condition size
     condition_values: dict = field(default_factory=lambda: {
         "Power-law exponent": [2.6, 3.0, 3.4], 
@@ -56,23 +56,28 @@ class Parameters:
     dfs_mode: str = "normal"  # ["high_degree_first", "normal", "low_degree_first"]から選択できる.
     ignore_label: int = 1500  # 5-tuples内のデータにおいて、無視するデー
     normalize: bool = False   # conditionのデータを正規化する
-    standardize: bool = True  # conditionのデータを標準化する
+    standardize: bool = False  # conditionのデータを標準化する
     
     # Graph properties
     power_degree_border_line: float = 0.7 # 次数分布の冪指数を出すときに大多数のデータに引っ張られるせいで１次元プロットが正しい値から離れてしまうのでいくつかの値を除いて導出するための除く割合
     
     # Models
-    model_set: list = field(default_factory=lambda: ["cvae", "cvae_with_re_encoder", "re_encoder", "cvae_for_2_tuples"])
+    model_set: list = field(default_factory=lambda: [
+      "cvae", "cvae_with_re_encoder", "re_encoder", "cvae_for_2_tuples"
+    ])
     dropout: float = 0.5        # dropout層に入力されたデータをdropさせる割合
     ## model hyper parameters
-    model_params: dict = field(default_factory=lambda: {'batch_size': 37, 'clip_th': 10, 'de_hidden_size': 250, 'emb_size': 227, "re_en_hidden_size": 223, 'en_hidden_size': 223,
-                                                       'lr': 0.001, 'rep_size': 10, "re_en_rep_size": 1, 'weight_decay': 0, 'word_drop': 0,
-                                                       "alpha": 1, "beta": 3, "gamma": 3})
+    model_params: dict = field(default_factory=lambda: {
+      'batch_size': 37, 'clip_th': 0.002362780918168105, 'de_hidden_size': 250, 'emb_size': 227, "re_en_hidden_size": 223,
+      'en_hidden_size': 223, 'lr': 0.001, 'rep_size': 10, "re_en_rep_size": 1, 'weight_decay': 0,
+      'word_drop': 0, "alpha": 1, "beta": 3, "gamma": 3
+    })
     """model parameters
     以前、tuningして得たbest params
     'lr' : 0.0015181790179257975
     'weight_decay' : 0.005663866734065268
     'clip_th' : 0.002362780918168105
+              : 10
     """
     
     # Train
@@ -81,12 +86,15 @@ class Parameters:
     
     # Eval
     # 現状、"power_degree", "cluster_coefficient", "distance", "size"
-    eval_params: list = field(default_factory=lambda: ["Power-law exponent", "Clustering coefficient", "Average path length", "Average degree" ,"Edge density", "Modularity", "Diameter","Largest component size"])
+    eval_params: list = field(default_factory=lambda: [
+      "Power-law exponent", "Clustering coefficient", "Average path length",
+      "Average degree", "Edge density", "Modularity", "Diameter", "Largest component size"
+    ])
     sampling_generation: bool = True        # 生成時に出力される分布からサンプリングするか最大値から取るか
     generate_edge_num: int = 100            # 生成するgraphのエッジの数
     number_of_generated_samples: int = 300  # 生成されるグラフサンプルの数
     size_th: int = 0                        # 評価に用いるネットワークのサイズの閾値
-    label_normalize: bool = True            # 生成時に与えるラベル情報を正規化するかどうか
+    label_normalize: bool = False            # 生成時に与えるラベル情報を正規化するかどうか
 
     # Visualize
     visualize_detail: dict = field(default_factory=lambda: {
@@ -97,8 +105,12 @@ class Parameters:
     
     # Etc
     ## グラフ特徴量の精度を計算する時、正解と分類される値の範囲([a, b] = {x-a <= x <= x+b | xはグラフ特徴量})
-    acc_range: dict = field(default_factory=lambda: {"Power-law exponent": [0.1, 0.1], "Clustering coefficient": [0.01, 0.01], "Average path length": [0.05, 0.05], "Average degree": [0.1, 0.1],
-                                                     "Edge density": [0.005], "Modularity": [0.02, 0.02], "Diameter": [0, 0], "Largest component size": [0, 0]})
+    acc_range: dict = field(default_factory=lambda: {
+      "Power-law exponent": [0.1, 0.1], "Clustering coefficient": [0.01, 0.01], 
+      "Average path length": [0.05, 0.05], "Average degree": [0.1, 0.1],
+      "Edge density": [0.005, 0.005], "Modularity": [0.02, 0.02], "Diameter": [0, 0],
+      "Largest component size": [0, 0]
+    })
     seed: int = 42  # すべての乱数生成器のseed
 
 
