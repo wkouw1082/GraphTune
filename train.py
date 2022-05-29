@@ -173,7 +173,8 @@ def train(params: 'config.Parameters', logger: 'logging.Logger'):
 		summary(
 			model,
 			input_size=(params.model_params["batch_size"], train_dataset.shape[1], train_dataset.shape[2]),
-			col_names=["output_size", "num_params"]
+			col_names=["output_size", "num_params"],
+			device=device
 		)
 	)
 
@@ -244,7 +245,6 @@ def train(params: 'config.Parameters', logger: 'logging.Logger'):
 						encoder_loss_per_epoch[phase] += encoder_loss.item()
 
 					## Decoder(Reconstruction) loss
-					# TODO decoderのloss関数の返すdictはtensorでないfloatだけにする。total lossはtensorでよい。
 					if use_model == "cvae":
 						results = {"tu": tu, "tv": tv, "lu": lu, "lv": lv, "le": le}
 						targets = {"tu": label[0][indicies], "tv": label[1][indicies], "lu": label[2][indicies],

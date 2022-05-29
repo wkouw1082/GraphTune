@@ -247,6 +247,8 @@ class Decoder(nn.Module):
 
         batch_size = x.shape[0]
 
+        # h_0 = try_gpu(self.device, torch.Tensor())
+        # c_0 = try_gpu(self.device, torch.Tensor())
         # for batch in range(x.shape[0]):
         #     conditional_value = x[batch, 0, -1 * self.condition_size].item()
         #     h_0 = torch.cat(
