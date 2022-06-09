@@ -68,7 +68,7 @@ class Parameters:
     dropout: float = 0.5        # dropout層に入力されたデータをdropさせる割合
     ## model hyper parameters
     model_params: dict = field(default_factory=lambda: {
-      'batch_size': 37, 'clip_th': 0.002362780918168105, 'de_hidden_size': 250, 'emb_size': 227, "re_en_hidden_size": 223,
+      'batch_size': 37, 'clip_th': 1.0, 'de_hidden_size': 250, 'emb_size': 227, "re_en_hidden_size": 223,
       'en_hidden_size': 223, 'lr': 0.001, 'rep_size': 10, "re_en_rep_size": 1, 'weight_decay': 0,
       'word_drop': 0, "alpha": 1, "beta": 3, "gamma": 3
     })
@@ -94,7 +94,7 @@ class Parameters:
     generate_edge_num: int = 100            # 生成するgraphのエッジの数
     number_of_generated_samples: int = 300  # 生成されるグラフサンプルの数
     size_th: int = 0                        # 評価に用いるネットワークのサイズの閾値
-    label_normalize: bool = False            # 生成時に与えるラベル情報を正規化するかどうか
+    # label_normalize: bool = False            # 生成時に与えるラベル情報を正規化するかどうか
 
     # Visualize
     visualize_detail: dict = field(default_factory=lambda: {
@@ -127,7 +127,7 @@ def common_args(parser: 'ArgumentParser'):
     ### 前処理で呼び出す関数の種類を["dfs_5_tuples", "dfs_2_tuples"]のフラグから選ぶ
     parser.add_argument("--preprocess_type", help="前処理の種類", type=str, default="dfs_5_tuples")
     ## model
-    parser.add_argument('--use_model', type=str, help="使用するモデル名", default=None)    # 学習対象のmodelをmodel_setから選択する
+    parser.add_argument('--use_model', type=str, help="使用するモデル名", default="cvae")    # 学習対象のmodelをmodel_setから選択する
     parser.add_argument('--re_encoder_file', type=str, help="事前学習済みReEncoderの重みへのPATH", default=None)  # 事前学習されたReEncoderの重みへのPATHを指定
     ## チェックポイントから学習を始める場合
     parser.add_argument('--checkpoint_file', help="loadするモデルへのPATH", default=None)  # loadするモデルのPATH
@@ -138,6 +138,7 @@ def common_args(parser: 'ArgumentParser'):
   
     # Visualize
     parser.add_argument('--eval_graphs', help="生成されたグラフが格納されているディレクトリへのPATH", type=str, default=None)		# 生成されたグラフが保存されているディレクトリ
+    parser.add_argument('--visualize_path', help="グラフを可視化した結果を格納するためのディレクトリへのPATH", type=str, default=None)		# グラフの可視化結果を保存するディレクトリ
     
     return parser
 

@@ -173,7 +173,8 @@ def train(params: 'config.Parameters', logger: 'logging.Logger'):
 		summary(
 			model,
 			input_size=(params.model_params["batch_size"], train_dataset.shape[1], train_dataset.shape[2]),
-			col_names=["output_size", "num_params"]
+			col_names=["output_size", "num_params"],
+			device=device
 		)
 	)
 
@@ -339,9 +340,9 @@ def train(params: 'config.Parameters', logger: 'logging.Logger'):
 					# 訓練の時だけ, 誤差逆伝搬 + 勾配クリッピング + オプティマイズする
 					if phase == "train":
 						model_loss.backward()
-      					# torch.nn.utils.clip_grad_norm_(model.parameters(), params.model_params["clip_th"])
-						opt.step()
 						torch.nn.utils.clip_grad_norm_(model.parameters(), params.model_params["clip_th"])
+						opt.step()
+
 
 			# model_lossから計算グラフを可視化
 			# dot = make_dot(model_loss, params=dict(model.named_parameters()))

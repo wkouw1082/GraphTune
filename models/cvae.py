@@ -246,7 +246,8 @@ class Decoder(nn.Module):
         
 
         batch_size = x.shape[0]
-
+        # h_0 = try_gpu(self.device, torch.Tensor())
+        # c_0 = try_gpu(self.device, torch.Tensor())
         # for batch in range(x.shape[0]):
         #     conditional_value = x[batch, 0, -1 * self.condition_size].item()
         #     h_0 = torch.cat(
@@ -284,6 +285,12 @@ class Decoder(nn.Module):
         lu = self.f_lu(x)
         lv = self.f_lv(x)
         le = self.f_le(x)
+        # tu = self.softmax(self.f_tu(x))
+        # tv = self.softmax(self.f_tv(x))
+        # lu = self.softmax(self.f_lu(x))
+        # lv = self.softmax(self.f_lv(x))
+        # le = self.softmax(self.f_le(x))
+        
         return tu, tv, lu, lv, le
 
     def generate(self, rep, conditional_label, max_size=100, is_output_sampling=True):
