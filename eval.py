@@ -21,7 +21,7 @@ from models import cvae, cvae_for_2_tuples, cvae_with_re_encoder
 from graph_process import graph_utils
 
 
-def eval(params, logger):
+def eval(params):
     """CVAE用の学習済みモデルを使用して, グラフを生成する関数
 
 	Args:
@@ -33,12 +33,12 @@ def eval(params, logger):
 
     # Load preprocessed dataset
     time_size, node_size, edge_size, conditional_size = joblib.load("dataset/param")
-    logger.info("--------------")
-    logger.info(f"time size: {time_size}")
-    logger.info(f"node size: {node_size}")
-    logger.info(f"edge size: {edge_size}")
-    logger.info(f"conditional size: {conditional_size}")
-    logger.info("--------------")
+    # logger.info("--------------")
+    # logger.info(f"time size: {time_size}")
+    # logger.info(f"node size: {node_size}")
+    # logger.info(f"edge size: {edge_size}")
+    # logger.info(f"conditional size: {conditional_size}")
+    # logger.info("--------------")
 
     # 生成されたグラフが十分なサイズであるか判別する関数
     is_sufficient_size = lambda graph: True if graph.number_of_nodes() > params.size_th else False
@@ -136,9 +136,9 @@ if __name__ == "__main__":
         exit()
         
     # ログ設定
-    logger = logging.getLogger(__name__)
+    # logger = logging.getLogger(__name__)
     result_dir = params.args['eval_model'].split('/')[0] + '/' + params.args['eval_model'].split('/')[1]
-    set_logging(result_dir, file_name="eval")  # ログを標準出力とファイルに出力するよう設定
+    # set_logging(result_dir, file_name="eval")  # ログを標準出力とファイルに出力するよう設定
 
     # eval
-    eval(params, logger)
+    eval(params)

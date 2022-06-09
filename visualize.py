@@ -17,7 +17,7 @@ from graph_process import complex_networks
 import bi
 
 
-def graph_plot(params):
+def graph_plot(params: "config.Parameters"):
 	"""グラフ特徴量をplotするための関数.
 
 	Args:
@@ -128,19 +128,17 @@ def graph_plot(params):
 	
 	print("visualize complete!")
 
-def graph_visualize(graph_path, result_dir=None, sampling_num=10):
+
+def graph_visualize(graph_path:str, visualize_dir:str, sampling_num:int=10):
 	"""グラフを可視化する関数
 
 	Args:
 		graph_path (str): グラフデータまでのpathの正規表現
 							e.g. graph_path = "result/20220329_171445/eval/*"
-		result_dir (str, optional): 結果出力ディレクトリ. Defaults to None.
-							e.g. result_dir = "result/20220329_171445/"
+       	visualize_dir(str): graph_pathに対応するvisualizeディレクトリ 
 		sampling_num (int, optional): サンプリングする数. Defaults to 10.
 	"""
-	if result_dir is None:
-		result_dir = graph_path.split("/")[0] + "/" + graph_path.split("/")[1] + "/"
-	visualize_dir = result_dir + "visualize/"
+	result_dir = graph_path.split("/")[0] + "/" + graph_path.split("/")[1] + "/"
 	output_path = visualize_dir + "graph_structure/"
 	if os.path.isdir(visualize_dir + "graph_structure/"):
 		shutil.rmtree(visualize_dir + "graph_structure")
@@ -169,4 +167,4 @@ if __name__ == "__main__":
  
 	# visualize
 	graph_plot(params)
-	# graph_visualize(args.eval_graphs+"*")
+	# graph_visualize(args.eval_graphs+"*", args.visualize_path)
