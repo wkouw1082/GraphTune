@@ -47,7 +47,7 @@ pip install -r requirements.txt
     - https://pytorch.org/get-started/previous-versions/
 
 ## Training
-- GraphTuneの学習をバックグラウンドで実行(`train.py`を修正する必要あり).
+- GraphTuneの学習をバックグラウンドで実行.
 ```shell
 nohup python -u train.py --preprocess --use_model cvae &
 ```
