@@ -322,9 +322,8 @@ image.render("example_model_file_name")
 ## 連絡先
 本プロジェクトに関する問い合わせは，以下までご連絡ください．
 
-長岡技術科学大学 大学院工学研究科  
+埼玉大学 大学院理工学研究科  
 准教授 渡部 康平  
-住所: 〒940-2188 新潟県 長岡市 上富岡町 1603-1  
-Tel: +81-258-47-9537  
-E-mail: [k_watabe@vos.nagaokaut.ac.jp](k_watabe@vos.nagaokaut.ac.jp)  
-Web: [NUT ComNets Lab.](https://kaede.nagaokaut.ac.jp/)
+住所: 〒338-8570 埼玉県 さいたま市 桜区 下大久保255  
+E-mail: [kwatabe@mail.saitama-u.ac.jp](kwatabe@mail.saitama-u.ac.jp) 
+Web: [ComNets Lab.](https://cn.ics.saitama-u.ac.jp)
