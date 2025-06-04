@@ -80,8 +80,7 @@ python visualize.py --eval_graphs result/{output-dir-name}/eval/
 ## Contact
 Kohei Watabe  
 Associate Professor,  
-Nagaoka University of Technology,  
-Adress: Kamitomiokamachi 1603-1, Nagaoka Niigata 940-2188, Japan  
-Tel: +81-258-47-9537  
-E-mail: [k_watabe@vos.nagaokaut.ac.jp](k_watabe@vos.nagaokaut.ac.jp)  
-Web: [NUT ComNets Lab.](https://kaede.nagaokaut.ac.jp/)
+Saitama University,  
+Adress: Shimo-okubo 255, Sakura-ku, Saitama city, Saitama 338-8570, Japan  
+E-mail: [kwatabe@mail.saitama-u.ac.jp](kwatabe@mail.saitama-u.ac.jp)
+Web: [ComNets Lab.](https://cn.ics.saitama-u.ac.jp/)
