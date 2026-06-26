@@ -13,8 +13,8 @@ If you find this code useful in your research, please consider citing the follow
   journal={IEEE Transactions on Network Science and Engineering}, 
   title={GraphTune: A Learning-Based Graph Generative Model With Tunable Structural Features}, 
   year={2023},
-  volume={},
-  number={},
+  volume={10},
+  number={4},
   doi={10.1109/TNSE.2023.3244590}
 }
 ```
